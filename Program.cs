@@ -1,10 +1,20 @@
 using CleanHome.Components;
+using CleanHome.DAL;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+//Obtener cadena de conexion para la bd 
+var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
+//Inyectar el contexto
+builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(ConStr));
+
+//Inyecta bootstrap
+builder.Services.AddBlazorBootstrap();
 
 var app = builder.Build();
 

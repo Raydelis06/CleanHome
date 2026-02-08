@@ -1,6 +1,11 @@
-﻿namespace CleanHome.DAL
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace CleanHome.DAL
 {
-    public class Contexto 
+    public class Contexto : DbContext
     {
+        public Contexto(DbContextOptions<Contexto> options) : base(options)
+        {
+        }
     }
 }
