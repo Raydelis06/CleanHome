@@ -1,5 +1,6 @@
 using CleanHome.Components;
 using CleanHome.DAL;
+using CleanHome.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,7 @@ builder.Services.AddRazorComponents()
 var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
 //Inyectar el contexto
 builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(ConStr));
-
+builder.Services.AddScoped<ClienteService>();
 //Inyecta bootstrap
 builder.Services.AddBlazorBootstrap();
 
