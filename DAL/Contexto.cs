@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CleanHome.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CleanHome.DAL
 {
@@ -7,5 +8,7 @@ namespace CleanHome.DAL
         public Contexto(DbContextOptions<Contexto> options) : base(options)
         {
         }
+
+        public DbSet<Clientes> Clientes { get; set; }
     }
 }
