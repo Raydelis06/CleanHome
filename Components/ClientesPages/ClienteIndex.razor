@@ -1,0 +1,117 @@
+﻿
+@using CleanHome.Models
+@using CleanHome.Services
+@inject ClienteService clienteService;
+@page "/Clientes"
+<PageTitle>Registro de Cliente</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-center mb-4">
+            <h5 class="card-title">Registro de Clientes</h5>
+            <a href="/Clientes/Agregar_Cliente" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
+        </div>
+
+        <div class="card-body">
+            
+            <div class="row ">
+                
+                <div class="col-3">
+                    <label class="col-form-label"><strong>Filtro</strong></label>
+                </div>
+
+               
+                <div class="col-4">
+                    <label class="col-form-label"><strong>Búsqueda</strong></label>
+                </div>
+            </div>
+
+           
+
+            <div class="row align-items-center">
+               
+                <div class="col-3">
+                    <div class="input-group">
+                        <InputSelect class="form-control" @bind-Value="Filtro">
+                            <option value="" selected disabled hidden >Elija una opción</option>
+                            <option value="Cedula">Cedula</option>
+                            <option value="Nombre">Nombre</option>
+                            <option value="Telefono">Telefono</option>
+                        </InputSelect>
+                    </div>
+                </div>
+
+                
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-hover">
+                <thead class="table table-striped text-black">
+                    <tr>
+                        <th>Id</th>
+                        <th>Cedula</th>
+                        <th>Nombre</th>
+                        <th>Telefono</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cliente in ListaClientes)
+                    {
+                        <tr>
+                            <td> @cliente.ClienteId</td>
+                            <td> @cliente.Cedula</td>
+                            <td> @cliente.Nombre</td>
+                            <td> @cliente.Telefono</td>
+
+                            <td class="text-center">
+                                <a href="/Clientes/Edit/@cliente.ClienteId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="card-footer space-between">
+                <label>Cantidad: @ListaClientes.Count()</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Clientes> ListaClientes { get; set; } = new List<Clientes>();
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaClientes = await clienteService.Listar(a => a.ClienteId > 0);
+    }
+    public async Task Buscar()
+    {
+        if (Filtro != "")
+        {
+            if (Filtro == "Nombre")
+            {
+                ListaClientes = await clienteService.Listar(a => a.Nombre.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Cedula")
+            {
+                ListaClientes = await clienteService.Listar(a => a.Cedula.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Telefono")
+            {
+                ListaClientes = await clienteService.Listar(a => a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+            }
+        }
+        else
+        {
+            ListaClientes = await clienteService.Listar(a => a.ClienteId > 0);
+        }
+    }
+}
