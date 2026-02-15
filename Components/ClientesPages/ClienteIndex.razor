@@ -28,6 +28,7 @@
                             <option value="Cedula">Cedula</option>
                             <option value="Nombre">Nombre</option>
                             <option value="Telefono">Telefono</option>
+                            <option value="Inactivos">Clientes inactivos</option>
                         </InputSelect>
                     </div>
 
@@ -52,10 +53,18 @@
                     @foreach (var cliente in ListaClientes)
                     {
                         <tr>
-                            <td> @cliente.Cedula</td>
-                            <td> @cliente.Nombre</td>
-                            <td> @cliente.Telefono</td>
-
+                            @if(cliente.Estado == Estados.Inactivo)
+                            {
+                                <td class="text-muted"> @cliente.Cedula</td>
+                                <td class="text-muted"> @cliente.Nombre</td>
+                                <td class="text-muted"> @cliente.Telefono</td>
+                            }
+                            else
+                            {
+                                <td> @cliente.Cedula</td>
+                                <td> @cliente.Nombre</td>
+                                <td> @cliente.Telefono</td>
+                            }
                             <td class="text-center">
                                 <a href="@($"/Clientes/Editar_Cliente/{@cliente.ClienteId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
                             </td>
@@ -78,7 +87,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ListaClientes = await clienteService.Listar(a => a.ClienteId > 0);
+        ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo && a.ClienteId > 0);
     }
     public async Task Buscar()
     {
@@ -86,20 +95,26 @@
         {
             if (Filtro == "Nombre")
             {
-                ListaClientes = await clienteService.Listar(a => a.Nombre.ToLower().Trim().Contains(ValorFiltro));
+                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo &&  a.Nombre.ToLower().Trim().Contains(ValorFiltro));
             }
             if (Filtro == "Cedula")
             {
-                ListaClientes = await clienteService.Listar(a => a.Cedula.ToLower().Trim().Contains(ValorFiltro));
+                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo && a.Cedula.ToLower().Trim().Contains(ValorFiltro));
             }
             if (Filtro == "Telefono")
             {
-                ListaClientes = await clienteService.Listar(a => a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo &&  a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Inactivos")
+            {
+                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Inactivo );
             }
         }
         else
         {
-            ListaClientes = await clienteService.Listar(a => a.ClienteId > 0);
+            ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo && a.ClienteId > 0);
         }
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
     }
 }
