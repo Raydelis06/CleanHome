@@ -8,27 +8,19 @@
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between align-center mb-4">
             <h5 class="card-title">Registro de Clientes</h5>
-            <a href="/Clientes/Agregar_Cliente" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
+            <a href="/Clientes/Crear_Cliente" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
         </div>
-
         <div class="card-body">
-            
             <div class="row ">
-                
                 <div class="col-3">
                     <label class="col-form-label"><strong>Filtro</strong></label>
                 </div>
-
-               
                 <div class="col-4">
                     <label class="col-form-label"><strong>Búsqueda</strong></label>
                 </div>
             </div>
 
-           
-
             <div class="row align-items-center">
-               
                 <div class="col-3">
                     <div class="input-group">
                         <InputSelect class="form-control" @bind-Value="Filtro">
@@ -39,8 +31,6 @@
                         </InputSelect>
                     </div>
                 </div>
-
-                
                 <div class="col-4">
                     <div class="input-group">
                         <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
@@ -50,9 +40,8 @@
             </div>
 
             <table class="table table-hover">
-                <thead class="table table-striped text-black">
+                <thead >
                     <tr>
-                        <th>Id</th>
                         <th>Cedula</th>
                         <th>Nombre</th>
                         <th>Telefono</th>
@@ -63,7 +52,6 @@
                     @foreach (var cliente in ListaClientes)
                     {
                         <tr>
-                            <td> @cliente.ClienteId</td>
                             <td> @cliente.Cedula</td>
                             <td> @cliente.Nombre</td>
                             <td> @cliente.Telefono</td>
