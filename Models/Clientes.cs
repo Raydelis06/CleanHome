@@ -23,7 +23,7 @@ public class Clientes
     [RegularExpression(@"^\(\d{3}\) \d{3}-\d{4}$",
     ErrorMessage = "El teléfono debe tener el formato (000) 000-0000")]
     public string Telefono { get; set; } = null;
-
+    public Estados Estado { get; set; } = Estados.Activo;
 
 }
 
