@@ -62,3 +62,8 @@ h1:focus {
     background-color: #7EA3C8 !important;
     color: white !important;
 }
+.form-control {
+    background-color: #E2E8ED;
+    color: black;
+    border-color: darkgray;
+}
