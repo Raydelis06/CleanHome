@@ -1,7 +1,9 @@
-﻿@using CleanHome.Models
+﻿@using CleanHome.Extensions
+@using CleanHome.Models
 @using CleanHome.Services
 @inject ClienteService clienteService
 @inject NavigationManager navegar
+@inject ToastService toastService
 @page "/Clientes/Crear_Cliente"
 @rendermode InteractiveServer
 
@@ -55,16 +57,20 @@
 
 @code
 {
-	private Clientes cliente = new();
+    private Clientes cliente = new();
 
-	private async Task Guardar()
-	{
-		var guardar = await clienteService.Guardar(cliente);
-		if (guardar)
-		{
-			navegar.NavigateTo("/Clientes");
-		}
-
-	}
+    private async Task Guardar()
+    {
+        var guardar = await clienteService.Guardar(cliente);
+        if (guardar)
+        {
+            toastService.ShowSuccess("El cliente ha sido creado con exito!");
+            navegar.NavigateTo("/Clientes");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al crear el cliente");
+        }
+    }
 
 }
