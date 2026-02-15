@@ -2,9 +2,10 @@
 @using CleanHome.Services
 @inject ClienteService clienteService
 @inject NavigationManager navegar
-@page "/Clientes/Agregar_Cliente"
+@page "/Clientes/Crear_Cliente"
 @rendermode InteractiveServer
 
+<PageTitle>Crear Cliente</PageTitle>
 <EditForm Model="cliente" OnValidSubmit="Guardar">
 
 	<DataAnnotationsValidator />
@@ -21,21 +22,25 @@
 				<div class="mb-3">
 					<label class="form-label"><strong>Cedula</strong></label>
 					<InputText class="form-control" @bind-Value="cliente.Cedula	"></InputText>
+					<ValidationMessage For="@(()=>cliente.Cedula)"></ValidationMessage>
 				</div>
 				@* Nombre *@
 				<div class="mb-3">
 					<label class="form-label"><strong>Nombre</strong></label>
 					<InputText class="form-control" @bind-Value="cliente.Nombre"></InputText>
+					<ValidationMessage For="@(() => cliente.Nombre)"></ValidationMessage>
 				</div>
 				@* Direccion *@
 				<div class="mb-3">
 					<label class="form-label"><strong>Direccion</strong></label>
 					<InputText class="form-control" @bind-Value="cliente.Direccion"></InputText>
+					<ValidationMessage For="@(() => cliente.Direccion)"></ValidationMessage>
 				</div>
 				@* Telefono *@
 				<div class="mb-3">
 					<label class="form-label"><strong>Telefono</strong></label>
 					<InputText class="form-control" @bind-Value="cliente.Telefono"></InputText>
+					<ValidationMessage For="@(() => cliente.Telefono)"></ValidationMessage>
 				</div>
 
 			</div>
