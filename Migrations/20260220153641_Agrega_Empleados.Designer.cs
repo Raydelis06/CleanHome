@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanHome.Migrations
 {
     [DbContext(typeof(Contexto))]
-    [Migration("20260220153100_Agrega_Empleados")]
+    [Migration("20260220153641_Agrega_Empleados")]
     partial class Agrega_Empleados
     {
         /// <inheritdoc />
