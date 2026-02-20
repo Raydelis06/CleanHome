@@ -73,40 +73,56 @@
 	[Parameter]
 	public int Id { get; set; }
 
-	Empleados empleado = new();
+	Empleados? empleado = new();
 
 	protected override async Task OnInitializedAsync()
 	{
-		empleado = await empleadoService.Buscar(Id);
+		if(empleado != null)
+		{
+			empleado = await empleadoService.Buscar(Id);
+
+		}
 	}
 
 	async Task Guardar()
 	{
-		var modificado = await empleadoService.Guardar(empleado);
-		if (modificado)
-			toastService.ShowSuccess("El empleado ha sido modificado con exito");
-		else
-			toastService.ShowWarning("Error al modificar el empleado.");
-		navegar.NavigateTo("/Empleados");
+		if (empleado != null)
+		{
+			var modificado = await empleadoService.Guardar(empleado);
+			if (modificado)
+				toastService.ShowSuccess("El empleado ha sido modificado con exito");
+			else
+				toastService.ShowWarning("Error al modificar el empleado.");
+			navegar.NavigateTo("/Empleados");
+		}
+
 	}
 	async Task Inactivar()
 	{
-		empleado.Estado = Estados.Inactivo;
-		var eliminado = empleado.Estado == Estados.Inactivo;
-		if (eliminado)
-			toastService.ShowSuccess("El empleado ahora esta inactivo. No se visualizara en el listado principal.");
-		else
-			toastService.ShowError("Ha ocurrido un error al eliminar el empleado");
-		navegar.NavigateTo("/Empleados");
+		if (empleado != null)
+		{
+			empleado.Estado = Estados.Inactivo;
+			var eliminado = empleado.Estado == Estados.Inactivo;
+			if (eliminado)
+				toastService.ShowSuccess("El empleado ahora esta inactivo. No se visualizara en el listado principal.");
+			else
+				toastService.ShowError("Ha ocurrido un error al eliminar el empleado");
+			navegar.NavigateTo("/Empleados");
+		}
+
 	}
 	async Task Activar()
 	{
-		empleado.Estado = Estados.Activo;
-		var recuperado = empleado.Estado == Estados.Activo;
-		if (recuperado)
-			toastService.ShowSuccess("El empleado ha sido recuperado con exito");
-		else
-			toastService.ShowError("Ha ocurrido un error al recuperar el empleado");
-		navegar.NavigateTo("/Empleados");
+		if (empleado != null)
+		{
+			empleado.Estado = Estados.Activo;
+			var recuperado = empleado.Estado == Estados.Activo;
+			if (recuperado)
+				toastService.ShowSuccess("El empleado ha sido recuperado con exito");
+			else
+				toastService.ShowError("Ha ocurrido un error al recuperar el empleado");
+			navegar.NavigateTo("/Empleados");
+		}
+		
 	}
 }

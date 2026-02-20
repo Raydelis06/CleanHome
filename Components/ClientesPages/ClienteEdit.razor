@@ -67,7 +67,7 @@
 	[Parameter]
 	public int Id { get; set; }
 
-	Clientes cliente = new();
+	Clientes? cliente = new();
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -76,31 +76,43 @@
 
 	async Task Guardar()
 	{
-		var modificado = await clienteService.Guardar(cliente);
-		if (modificado)
-			toastService.ShowSuccess("El cliente ha sido modificado con exito");
-		else
-			toastService.ShowWarning("Error al modificar el cliente.");
-		navegar.NavigateTo("/Clientes");
+		if(cliente != null)
+		{
+			var modificado = await clienteService.Guardar(cliente);
+			if (modificado)
+				toastService.ShowSuccess("El cliente ha sido modificado con exito");
+			else
+				toastService.ShowWarning("Error al modificar el cliente.");
+			navegar.NavigateTo("/Clientes");
+		}
+
 	}
 	async Task Inactivar()
 	{
-		cliente.Estado = Estados.Inactivo;
-		var eliminado = cliente.Estado == Estados.Inactivo;
-		if (eliminado)
-			toastService.ShowSuccess("El cliente ahora esta inactivo. No se visualizara en el listado principal.");
-		else
-			toastService.ShowError("Ha ocurrido un error al eliminar el cliente");
-		navegar.NavigateTo("/Clientes");
+		if(cliente != null)
+		{
+			cliente.Estado = Estados.Inactivo;
+			var eliminado = cliente.Estado == Estados.Inactivo;
+			if (eliminado)
+				toastService.ShowSuccess("El cliente ahora esta inactivo. No se visualizara en el listado principal.");
+			else
+				toastService.ShowError("Ha ocurrido un error al eliminar el cliente");
+			navegar.NavigateTo("/Clientes");
+		}
+
 	}
 	async Task Activar()
 	{
-		cliente.Estado = Estados.Activo;
-		var recuperado = cliente.Estado == Estados.Activo;
-		if (recuperado)
-			toastService.ShowSuccess("El cliente ha sido recuperado con exito");
-		else
-			toastService.ShowError("Ha ocurrido un error al recuperar el cliente");
-		navegar.NavigateTo("/Clientes");
+		if(cliente != null)
+		{
+			cliente.Estado = Estados.Activo;
+			var recuperado = cliente.Estado == Estados.Activo;
+			if (recuperado)
+				toastService.ShowSuccess("El cliente ha sido recuperado con exito");
+			else
+				toastService.ShowError("Ha ocurrido un error al recuperar el cliente");
+			navegar.NavigateTo("/Clientes");
+		}
+		
 	}
 }
