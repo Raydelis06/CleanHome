@@ -1,0 +1,112 @@
+﻿@using CleanHome.Extensions
+@using CleanHome.Models
+@using CleanHome.Services
+@inject EmpleadoService empleadoService
+@inject NavigationManager navegar
+@inject ToastService toastService
+@page "/Empleados/Editar_Empleado/{Id:int}"
+@rendermode InteractiveServer
+
+<PageTitle>Editar Empleado</PageTitle>
+<EditForm Model="empleado" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header text-center">
+				<h5 class="card-title">Editar Empleado</h5>
+			</div>
+
+			<div class="card-body ">
+				<div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+					@* Cédula *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Cédula</strong></label>
+						<InputText class="form-control" @bind-Value="empleado.Cedula"></InputText>
+						<ValidationMessage For="@(() => empleado.Cedula)" />
+					</div>
+					@* Nombre *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Nombre</strong></label>
+						<InputText class="form-control" @bind-Value="empleado.Nombre"></InputText>
+						<ValidationMessage For="@(() => empleado.Nombre)" />
+					</div>
+					@* Correo *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Correo</strong></label>
+						<InputText class="form-control" @bind-Value="empleado.Correo"></InputText>
+						<ValidationMessage For="@(() => empleado.Correo)" />
+					</div>
+					@* Teléfono *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Teléfono</strong></label>
+						<InputText class="form-control" @bind-Value="empleado.Telefono"></InputText>
+						<ValidationMessage For="@(() => empleado.Telefono)" />
+					</div>
+					@* Cargo *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Cargo</strong></label>
+						<InputText class="form-control" @bind-Value="empleado.Cargo"></InputText>
+						<ValidationMessage For="@(() => empleado.Cargo)" />
+					</div>
+				</div>
+
+				@*footer*@
+				<div class="card-footer text-center mt-2">
+					<a href="/Clientes" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+					<button type="submit" class="btn btn-primary bi bi-floppy">Guardar</button>
+					@if (empleado.Estado == Estados.Activo)
+					{
+						<button class="btn btn-danger bi bi-trash" @onclick="Inactivar">Eliminar</button>
+					}
+					else
+					{
+						<button class="btn btn-success bi bi-arrow-counterclockwise" @onclick="Activar">Recuperar</button>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+</EditForm>
+
+@code
+{
+	[Parameter]
+	public int Id { get; set; }
+
+	Empleados empleado = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		empleado = await empleadoService.Buscar(Id);
+	}
+
+	async Task Guardar()
+	{
+		var modificado = await empleadoService.Guardar(empleado);
+		if (modificado)
+			toastService.ShowSuccess("El empleado ha sido modificado con exito");
+		else
+			toastService.ShowWarning("Error al modificar el empleado.");
+		navegar.NavigateTo("/Empleados");
+	}
+	async Task Inactivar()
+	{
+		empleado.Estado = Estados.Inactivo;
+		var eliminado = empleado.Estado == Estados.Inactivo;
+		if (eliminado)
+			toastService.ShowSuccess("El empleado ahora esta inactivo. No se visualizara en el listado principal.");
+		else
+			toastService.ShowError("Ha ocurrido un error al eliminar el empleado");
+		navegar.NavigateTo("/Empleados");
+	}
+	async Task Activar()
+	{
+		empleado.Estado = Estados.Activo;
+		var recuperado = empleado.Estado == Estados.Activo;
+		if (recuperado)
+			toastService.ShowSuccess("El empleado ha sido recuperado con exito");
+		else
+			toastService.ShowError("Ha ocurrido un error al recuperar el empleado");
+		navegar.NavigateTo("/Empleados");
+	}
+}

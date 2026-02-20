@@ -1,0 +1,82 @@
+﻿@using CleanHome.Extensions
+@using CleanHome.Models
+@using CleanHome.Services
+@inject EmpleadoService empleadoService
+@inject NavigationManager navegar
+@inject ToastService toastService
+@page "/Empleados/Crear_Empleado"
+@rendermode InteractiveServer
+
+<PageTitle>Crear Empleado</PageTitle>
+<EditForm Model="empleado" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header text-center">
+				<h5 class="card-title">Crear Empleado</h5>
+			</div>
+
+			<div class="card-body ">
+                <div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+                    @* Cédula *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Cédula</strong></label>
+                        <InputText class="form-control" @bind-Value="empleado.Cedula"></InputText>
+                        <ValidationMessage For="@(() => empleado.Cedula)" />
+                    </div>
+                    @* Nombre *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Dirección</strong></label>
+                        <InputText class="form-control" @bind-Value="empleado.Nombre"></InputText>
+                        <ValidationMessage For="@(() => empleado.Nombre)" />
+                    </div>
+                    @* Correo *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Correo</strong></label>
+                        <InputText class="form-control" @bind-Value="empleado.Correo"></InputText>
+                        <ValidationMessage For="@(() => empleado.Correo)" />
+                    </div>
+                    @* Teléfono *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Teléfono</strong></label>
+                        <InputText class="form-control" @bind-Value="empleado.Telefono"></InputText>
+                        <ValidationMessage For="@(() => empleado.Telefono)" />
+                    </div>
+					@* Cargo *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Cargo</strong></label>
+                        <InputText class="form-control" @bind-Value="empleado.Cargo"></InputText>
+                        <ValidationMessage For="@(() => empleado.Cargo)" />
+                    </div>
+
+                </div>
+			</div>
+
+			@*footer*@
+			<div class="card-footer text-center mt-2">
+				<a href="/Clientes" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+				<button type="submit" class="btn btn-primary bi bi-floppy">Guardar</button>
+			</div>
+		</div>
+	</div>
+</EditForm>
+
+@code
+{
+    private Empleados empleado = new();
+
+    private async Task Guardar()
+    {
+        var guardar = await empleadoService.Guardar(empleado);
+        if (guardar)
+        {
+            toastService.ShowSuccess("El cliente ha sido creado con exito!");
+            navegar.NavigateTo("/Empleados");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al crear el cliente");
+        }
+    }
+
+}

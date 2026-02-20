@@ -1,0 +1,132 @@
+﻿
+@using CleanHome.Models
+@using CleanHome.Services
+@inject EmpleadoService empleadoService;
+@page "/Empleados"
+<PageTitle>Registro de Empleados</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-center ">
+            <h5 class="card-title">Registro de Clientes</h5>
+            <a href="/Empleados/Crear_Empleado" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <div class="row">
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Filtro</strong></label>
+                    </div>
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Búsqueda</strong></label>
+                    </div>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <InputSelect class="form-control" @bind-Value="Filtro">
+                            <option value="" selected disabled hidden>Elija una opción</option>
+                            <option value="Cedula">Cedula</option>
+                            <option value="Nombre">Nombre</option>
+                            <option value="Telefono">Telefono</option>
+                            <option value="Inactivos">Empleados inactivos</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="input-group">
+                            <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+                            <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-hover">
+                <thead >
+                    <tr>
+                        <th>Cedula</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Telefono</th>
+                        <th>Cargo</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var empleado in ListaEmpleados)
+                    {
+                        <tr>
+                            @if (empleado.Estado == Estados.Inactivo)
+                            {
+                                <td class="text-muted"> @empleado.Cedula</td>
+                                <td class="text-muted"> @empleado.Nombre</td>
+                                <td class="text-muted"> @empleado.Correo</td>
+                                <td class="text-muted"> @empleado.Telefono</td>
+                                <td class="text-muted"> @empleado.Cargo</td>
+                            }
+                            else
+                            {
+                                <td> @empleado.Cedula</td>
+                                <td> @empleado.Nombre</td>
+                                <td> @empleado.Telefono</td>
+                            }
+                            <td class="text-center">
+                                <a href="@($"/Empleados/Editar_Empleado/{empleado.EmpleadoId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="card-footer space-between">
+                <label>Cantidad: @ListaEmpleados.Count()</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Empleados> ListaEmpleados { get; set; } = new List<Empleados>();
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.EmpleadoId > 0);
+    }
+    public async Task Buscar()
+    {
+        if (Filtro != "")
+        {
+            if (Filtro == "Nombre")
+            {
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.Nombre.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Cedula")
+            {
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.Cedula.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Telefono")
+            {
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo &&  a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Cargo")
+            {
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Correo")
+            {
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Empleados inactivos")
+            {
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Inactivo );
+            }
+        }
+        else
+        {
+            ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.EmpleadoId > 0);
+        }
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+    }
+}
