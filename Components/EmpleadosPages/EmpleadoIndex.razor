@@ -7,7 +7,7 @@
 <div class="container">
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between align-center ">
-            <h5 class="card-title">Registro de Clientes</h5>
+            <h5 class="card-title">Registro de Empleados</h5>
             <a href="/Empleados/Crear_Empleado" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
         </div>
         <div class="card-body">
@@ -40,7 +40,7 @@
                     </div>
                 </div>
             </div>
-            <table class="table table-hover">
+            <table class="table table-hover table-responsive">
                 <thead >
                     <tr>
                         <th>Cedula</th>
@@ -67,7 +67,9 @@
                             {
                                 <td> @empleado.Cedula</td>
                                 <td> @empleado.Nombre</td>
+                                <td> @empleado.Correo</td>
                                 <td> @empleado.Telefono</td>
+                                <td> @empleado.Cargo</td>
                             }
                             <td class="text-center">
                                 <a href="@($"/Empleados/Editar_Empleado/{empleado.EmpleadoId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>

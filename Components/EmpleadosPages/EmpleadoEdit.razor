@@ -20,15 +20,13 @@
 				<div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
 					@* Cédula *@
 					<div class="col-md-5">
-						<label class="form-label"><strong>Cédula</strong></label>
-						<InputText class="form-control" @bind-Value="empleado.Cedula"></InputText>
-						<ValidationMessage For="@(() => empleado.Cedula)" />
+						<label class="form-label"><strong>Cédula: </strong></label>
+						<label>@empleado.Cedula</label>
 					</div>
 					@* Nombre *@
 					<div class="col-md-5">
-						<label class="form-label"><strong>Nombre</strong></label>
-						<InputText class="form-control" @bind-Value="empleado.Nombre"></InputText>
-						<ValidationMessage For="@(() => empleado.Nombre)" />
+						<label class="form-label"><strong>Nombre: </strong></label>
+						<label>@empleado.Nombre</label>
 					</div>
 					@* Correo *@
 					<div class="col-md-5">
@@ -49,20 +47,22 @@
 						<ValidationMessage For="@(() => empleado.Cargo)" />
 					</div>
 				</div>
-
-				@*footer*@
-				<div class="card-footer text-center mt-2">
-					<a href="/Clientes" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
-					<button type="submit" class="btn btn-primary bi bi-floppy">Guardar</button>
+			</div>
+			@*footer*@
+			<div class="card-footer text-center mt-3 d-flex justify-content-center">
+				<div class="d-flex justify-content-between gap-2">
+					<a href="/Empleados" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+					<button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
 					@if (empleado.Estado == Estados.Activo)
 					{
-						<button class="btn btn-danger bi bi-trash" @onclick="Inactivar">Eliminar</button>
+						<button class="btn btn-danger bi bi-trash" @onclick="Eliminar"> Eliminar</button>
 					}
 					else
 					{
-						<button class="btn btn-success bi bi-arrow-counterclockwise" @onclick="Activar">Recuperar</button>
+						<button class="btn btn-success bi bi-arrow-counterclockwise" @onclick="Recuperar"> Recuperar</button>
 					}
 				</div>
+				
 			</div>
 		</div>
 	</div>
@@ -90,38 +90,45 @@
 		{
 			var modificado = await empleadoService.Guardar(empleado);
 			if (modificado)
+			{
 				toastService.ShowSuccess("El empleado ha sido modificado con exito");
+				navegar.NavigateTo("/Empleados");
+
+			}
 			else
 				toastService.ShowWarning("Error al modificar el empleado.");
-			navegar.NavigateTo("/Empleados");
 		}
 
 	}
-	async Task Inactivar()
+	async Task Eliminar()
 	{
 		if (empleado != null)
 		{
-			empleado.Estado = Estados.Inactivo;
-			var eliminado = empleado.Estado == Estados.Inactivo;
+			var eliminado = await empleadoService.Eliminar(empleado);
 			if (eliminado)
-				toastService.ShowSuccess("El empleado ahora esta inactivo. No se visualizara en el listado principal.");
+			{
+				toastService.ShowSuccess("El empleado ha sido eliminado con exito!");
+				navegar.NavigateTo("/Empleados");
+
+			}
 			else
 				toastService.ShowError("Ha ocurrido un error al eliminar el empleado");
-			navegar.NavigateTo("/Empleados");
 		}
 
 	}
-	async Task Activar()
+	async Task Recuperar()
 	{
 		if (empleado != null)
 		{
-			empleado.Estado = Estados.Activo;
-			var recuperado = empleado.Estado == Estados.Activo;
+			var recuperado = await empleadoService.Recuperar(empleado);
 			if (recuperado)
+			{
 				toastService.ShowSuccess("El empleado ha sido recuperado con exito");
+				navegar.NavigateTo("/Empleados");
+
+			}
 			else
 				toastService.ShowError("Ha ocurrido un error al recuperar el empleado");
-			navegar.NavigateTo("/Empleados");
 		}
 		
 	}
