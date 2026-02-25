@@ -41,11 +41,19 @@ namespace CleanHome.Services
             return await contexto.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> Eliminar(int empleadoId)
+        public async Task<bool> Eliminar(Empleados empleado)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Empleados.AsNoTracking().Where(a => a.EmpleadoId == empleadoId)
-                .ExecuteDeleteAsync() > 0;
+            empleado.Estado = Estados.Inactivo;
+            contexto.Update(empleado);
+            return await contexto.SaveChangesAsync() > 0;
+        }
+        public async Task<bool> Recuperar(Empleados empleado)
+        {
+            await using var contexto = await DbFactory.CreateDbContextAsync();
+            empleado.Estado = Estados.Activo;
+            contexto.Update(empleado);
+            return await contexto.SaveChangesAsync() > 0;
         }
 
         public async Task<List<Empleados>> Listar(Expression<Func<Empleados, bool>> criterio)

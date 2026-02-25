@@ -41,11 +41,19 @@ public class ClienteService(IDbContextFactory<Contexto> DbFactory)
         return await contexto.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> Eliminar(int clienteId)
+    public async Task<bool> Eliminar(Clientes cliente)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Clientes.AsNoTracking().Where(a => a.ClienteId == clienteId)
-            .ExecuteDeleteAsync() > 0;
+        cliente.Estado = Estados.Inactivo;
+        contexto.Update(cliente);
+        return await contexto.SaveChangesAsync() > 0;
+    }
+    public async Task<bool> Recuperar(Clientes cliente)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        cliente.Estado = Estados.Activo;
+        contexto.Update(cliente);
+        return await contexto.SaveChangesAsync() > 0;
     }
 
     public async Task<List<Clientes>> Listar(Expression<Func<Clientes, bool>> criterio)
