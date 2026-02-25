@@ -1,0 +1,115 @@
+﻿
+@using CleanHome.Models
+@using CleanHome.Services
+@inject ProveedorService proveedorService;
+@page "/Proveedores"
+<PageTitle>Registro de Proveedores</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-center ">
+            <h5 class="card-title">Registro de Proveedores</h5>
+            <a href="/Proveedores/Crear_Proveedor" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <div class="row">
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Filtro</strong></label>
+                    </div>
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Búsqueda</strong></label>
+                    </div>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <InputSelect class="form-control" @bind-Value="Filtro">
+                            <option value="" selected disabled hidden>Elija una opción</option>
+                            <option value="Nombre">Nombre</option>
+                            <option value="Telefono">Telefono</option>
+                            <option value="Inactivos">Proveedores inactivos</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="input-group">
+                            <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+                            <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead >
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Direcci&oacute;n</th>
+                        <th>Telefono</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var proveedor in ListaProveedores)
+                    {
+                        <tr>
+                            @if(proveedor.Estado == Estados.Inactivo)
+                            {
+                                <td class="text-muted"> @proveedor.Nombre</td>
+                                <td class="text-muted"> @proveedor.Direccion</td>
+                                <td class="text-muted"> @proveedor.Telefono</td>
+                            }
+                            else
+                            {
+                                <td> @proveedor.Nombre</td>
+                                <td> @proveedor.Direccion</td>
+                                <td> @proveedor.Telefono</td>
+                            }
+                            <td class="text-center">
+                                <a href="@($"/Proveedores/Editar_Proveedor/{proveedor.ProveedorId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="card-footer space-between">
+                <label>Cantidad: @ListaProveedores.Count()</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Proveedores> ListaProveedores { get; set; } = new List<Proveedores>();
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Activo && a.ProveedorId > 0);
+    }
+    public async Task Buscar()
+    {
+        if (Filtro != "")
+        {
+            if (Filtro == "Nombre")
+            {
+                ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Activo &&  a.Nombre.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Telefono")
+            {
+                ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Activo &&  a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Inactivos")
+            {
+                ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Inactivo );
+            }
+        }
+        else
+        {
+            ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Activo && a.ProveedorId > 0);
+        }
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+    }
+}
