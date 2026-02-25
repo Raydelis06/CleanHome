@@ -22,7 +22,7 @@ namespace CleanHome.Services
         public async Task<bool> Existe(int proveedorId)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Proveedores.AnyAsync(a => a.ProveedorId == proveedorId);
+            return await contexto.Proveedores.AnyAsync(a => a.ProveedorId == proveedorId );
 
         }
 
