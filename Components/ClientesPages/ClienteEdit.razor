@@ -8,37 +8,39 @@
 @rendermode InteractiveServer
 
 <PageTitle>Editar Cliente</PageTitle>
-<EditForm Model="cliente" OnValidSubmit="Guardar">
-	<DataAnnotationsValidator />
+
 	<div class="container">
 		<div class="card shadow-lg">
 			<div class="card-header text-center">
 				<h5 class="card-title">Editar Cliente</h5>
 			</div>
-			<div class="card-body ">
-				<div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
-					@* Nombre *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Nombre: </strong>@cliente.Nombre</label>
-					</div>
-					@* Cédula *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Cédula: </strong>@cliente.Cedula</label>
-					</div>
-					@* Dirección *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Dirección</strong></label>
-						<InputText class="form-control" @bind-Value="cliente.Direccion"></InputText>
-						<ValidationMessage For="@(() => cliente.Direccion)" />
-					</div>
-					@* Teléfono *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Teléfono</strong></label>
-						<InputText class="form-control" @bind-Value="cliente.Telefono"></InputText>
-						<ValidationMessage For="@(() => cliente.Telefono)" />
+			<EditForm Model="cliente" OnValidSubmit="Guardar">
+			<DataAnnotationsValidator />
+				<div class="card-body ">
+					<div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+						@* Nombre *@
+						<div class="col-md-5">
+							<label class="form-label"><strong>Nombre: </strong>@cliente.Nombre</label>
+						</div>
+						@* Cédula *@
+						<div class="col-md-5">
+							<label class="form-label"><strong>Cédula: </strong>@cliente.Cedula</label>
+						</div>
+						@* Dirección *@
+						<div class="col-md-5">
+							<label class="form-label"><strong>Dirección</strong></label>
+							<InputText class="form-control" @bind-Value="cliente.Direccion"></InputText>
+							<ValidationMessage For="@(() => cliente.Direccion)" />
+						</div>
+						@* Teléfono *@
+						<div class="col-md-5">
+							<label class="form-label"><strong>Teléfono</strong></label>
+							<InputText class="form-control" @bind-Value="cliente.Telefono"></InputText>
+							<ValidationMessage For="@(() => cliente.Telefono)" />
+						</div>
 					</div>
 				</div>
-			</div>
+			</EditForm>
 			@*footer*@
 			<div class="card-footer text-center mt-3 d-flex justify-content-center">
 				<div class="d-flex justify-content-between gap-2">
@@ -57,7 +59,6 @@
 			</div>
 		</div>
 	</div>
-</EditForm>
 
 @code
 {

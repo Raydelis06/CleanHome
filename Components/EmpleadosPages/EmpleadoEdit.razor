@@ -8,46 +8,46 @@
 @rendermode InteractiveServer
 
 <PageTitle>Editar Empleado</PageTitle>
-<EditForm Model="empleado" OnValidSubmit="Guardar">
-	<DataAnnotationsValidator />
 	<div class="container">
 		<div class="card shadow-lg">
 			<div class="card-header text-center">
 				<h5 class="card-title">Editar Empleado</h5>
 			</div>
-
-			<div class="card-body ">
-				<div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
-					@* Cédula *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Cédula: </strong></label>
-						<label>@empleado.Cedula</label>
-					</div>
-					@* Nombre *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Nombre: </strong></label>
-						<label>@empleado.Nombre</label>
-					</div>
-					@* Correo *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Correo</strong></label>
-						<InputText class="form-control" @bind-Value="empleado.Correo"></InputText>
-						<ValidationMessage For="@(() => empleado.Correo)" />
-					</div>
-					@* Teléfono *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Teléfono</strong></label>
-						<InputText class="form-control" @bind-Value="empleado.Telefono"></InputText>
-						<ValidationMessage For="@(() => empleado.Telefono)" />
-					</div>
-					@* Cargo *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Cargo</strong></label>
-						<InputText class="form-control" @bind-Value="empleado.Cargo"></InputText>
-						<ValidationMessage For="@(() => empleado.Cargo)" />
+			<EditForm Model="empleado" OnValidSubmit="Guardar">
+			<DataAnnotationsValidator />
+				<div class="card-body ">
+					<div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+						@* Cédula *@
+						<div class="col-md-5">
+							<label class="form-label"><strong>Cédula: </strong></label>
+							<label>@empleado.Cedula</label>
+						</div>
+						@* Nombre *@
+						<div class="col-md-5">
+							<label class="form-label"><strong>Nombre: </strong></label>
+							<label>@empleado.Nombre</label>
+						</div>
+						@* Correo *@
+						<div class="col-md-5">
+							<label class="form-label"><strong>Correo</strong></label>
+							<InputText class="form-control" @bind-Value="empleado.Correo"></InputText>
+							<ValidationMessage For="@(() => empleado.Correo)" />
+						</div>
+						@* Teléfono *@
+						<div class="col-md-5">
+							<label class="form-label"><strong>Teléfono</strong></label>
+							<InputText class="form-control" @bind-Value="empleado.Telefono"></InputText>
+							<ValidationMessage For="@(() => empleado.Telefono)" />
+						</div>
+						@* Cargo *@
+						<div class="col-md-5">
+							<label class="form-label"><strong>Cargo</strong></label>
+							<InputText class="form-control" @bind-Value="empleado.Cargo"></InputText>
+							<ValidationMessage For="@(() => empleado.Cargo)" />
+						</div>
 					</div>
 				</div>
-			</div>
+			</EditForm>
 			@*footer*@
 			<div class="card-footer text-center mt-3 d-flex justify-content-center">
 				<div class="d-flex justify-content-between gap-2">
@@ -66,7 +66,6 @@
 			</div>
 		</div>
 	</div>
-</EditForm>
 
 @code
 {
