@@ -1,0 +1,73 @@
+﻿@using CleanHome.Extensions
+@using CleanHome.Models
+@using CleanHome.Services
+@inject ProveedorService proveedorService
+@inject NavigationManager navegar
+@inject ToastService toastService
+@page "/Proveedores/Crear_Proveedor"
+@rendermode InteractiveServer
+
+<PageTitle>Crear Proveedor</PageTitle>
+<EditForm Model="proveedor" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header text-center">
+                <h5 class="card-title">Crear Proveedor</h5>
+			</div>
+
+			<div class="card-body ">
+                <div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+                    @* Nombre *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Nombre</strong></label>
+                        <InputText class="form-control" @bind-Value="proveedor.Nombre"></InputText>
+                        <ValidationMessage For="@(() => proveedor.Nombre)" />
+                    </div>
+                    @* Dirección *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Dirección</strong></label>
+                        <InputText class="form-control" @bind-Value="proveedor.Direccion"></InputText>
+                        <ValidationMessage For="@(() => proveedor.Direccion)" />
+                    </div>
+                    @* Teléfono *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Teléfono</strong></label>
+                        <InputText class="form-control" @bind-Value="proveedor.Telefono"></InputText>
+                        <ValidationMessage For="@(() => proveedor.Telefono)" />
+                    </div>
+
+                </div>
+			</div>
+
+			@*footer*@
+            <div class="card-footer text-center mt-3 d-flex justify-content-center">
+                <div class="d-flex justify-content-between gap-2">
+                    <a href="/Proveedores" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+                    <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+                </div>
+				
+			</div>
+		</div>
+	</div>
+</EditForm>
+
+@code
+{
+    private Proveedores proveedor = new();
+
+    private async Task Guardar()
+    {
+        var guardar = await proveedorService.Guardar(proveedor);
+        if (guardar)
+        {
+            toastService.ShowSuccess("El proveedor ha sido creado con exito!");
+            navegar.NavigateTo("/Proveedores");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al crear el proveedor");
+        }
+    }
+
+}
