@@ -18,5 +18,6 @@ namespace CleanHome.Models
         public double Precio { get; set; }
         [Required(ErrorMessage = "Este campo es obligatorio")]
         public int ProveedorId { get; set; }
+        public Estados Estado { get; set; } = Estados.Activo;
     }
 }
