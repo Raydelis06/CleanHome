@@ -47,23 +47,22 @@
 						</div>
 					</div>
 				</div>
-			</EditForm>
-			@*footer*@
-			<div class="card-footer text-center mt-3 d-flex justify-content-center">
-				<div class="d-flex justify-content-between gap-2">
-					<a href="/Empleados" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
-					<button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
-					@if (empleado.Estado == Estados.Activo)
-					{
-						<button class="btn btn-danger bi bi-trash" @onclick="Eliminar"> Eliminar</button>
-					}
-					else
-					{
-						<button class="btn btn-success bi bi-arrow-counterclockwise" @onclick="Recuperar"> Recuperar</button>
-					}
+				@*footer*@
+				<div class="card-footer text-center mt-3 d-flex justify-content-center">
+					<div class="d-flex justify-content-between gap-2">
+						<a href="/Empleados" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+						<button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+						@if (empleado.Estado == Estados.Activo)
+						{
+							<button class="btn btn-danger bi bi-trash" @onclick="Eliminar"> Eliminar</button>
+						}
+						else
+						{
+							<button class="btn btn-success bi bi-arrow-counterclockwise" @onclick="Recuperar"> Recuperar</button>
+						}
+					</div>
 				</div>
-				
-			</div>
+			</EditForm>
 		</div>
 	</div>
 
