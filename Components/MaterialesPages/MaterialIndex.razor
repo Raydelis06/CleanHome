@@ -1,0 +1,161 @@
+﻿
+@using CleanHome.Models
+@using CleanHome.Services
+@inject MaterialService materialService;
+@inject ProveedorService proveedorService;
+@page "/Materiales"
+<PageTitle>Registro de Materiales</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-center ">
+            <h5 class="card-title">Registro de Materiales</h5>
+            <a href="/Materiales/Crear_Material" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <div class="row">
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Filtro</strong></label>
+                    </div>
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Búsqueda</strong></label>
+                    </div>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <InputSelect class="form-control" @bind-Value="Filtro">
+                            <option value="" selected disabled hidden>Elija una opción</option>
+                            <option value="Nombre">Nombre</option>
+                            <option value="Unidad">Unidad</option>
+                            <option value="Inactivos">Materiales Eliminados</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="input-group">
+                            <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+                            <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead >
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Proveedor</th>
+                        <th>Cantidad disponible</th>
+                        <th>Unidad</th>
+                        <th>Precio</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var material in ListaMateriales)
+                    {
+                        <tr>
+                            @if(material.Estado == Estados.Inactivo)
+                            {
+                                <td class="text-muted"> @material.Nombre</td>
+                                <td class="text-muted">
+                                    @{
+                                        Proveedores? proveedorEncontrado = null;
+                                    }
+                                    @foreach (var proveedor in ListaProveedores)
+                                    {
+                                        @if (proveedor.ProveedorId == material.MaterialId)
+                                        {
+                                            proveedorEncontrado = proveedor;
+                                        }
+                                    }
+                                    @if (proveedorEncontrado != null)
+                                    {
+                                        <span>@proveedorEncontrado.Nombre</span>
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </td>
+                                <td class="text-muted"> @material.CantidadDisponible</td>
+                                <td class="text-muted"> @material.Unidad</td>
+                                <td class="text-muted"> @material.Precio</td>
+                            }
+                            else
+                            {
+                                <td> @material.Nombre</td>
+                                <td>
+                                    @{
+                                        Proveedores? proveedorEncontrado = null;
+                                    }
+                                    @foreach (var proveedor in ListaProveedores)
+                                    {
+                                        @if (proveedor.ProveedorId == material.MaterialId)
+                                        {
+                                            proveedorEncontrado = proveedor;
+                                        }
+                                    }
+                                    @if (proveedorEncontrado != null)
+                                    {
+                                        <span>@proveedorEncontrado.Nombre</span>
+                                    }else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </td>
+                                <td> @material.CantidadDisponible</td>
+                                <td> @material.Unidad</td>
+                                <td> @material.Precio</td>
+                            }
+                            <td class="text-center">
+                                <a href="@($"/Materiales/Editar_Material/{material.MaterialId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="card-footer space-between">
+                <label>Cantidad: @ListaMateriales.Count()</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Materiales> ListaMateriales { get; set; } = new List<Materiales>();
+    public List<Proveedores> ListaProveedores { get; set; } = new List<Proveedores>();
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaMateriales = await materialService.Listar(a => a.Estado == Estados.Activo && a.MaterialId > 0);
+        ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Activo && a.ProveedorId > 0);
+    }
+    public async Task Buscar()
+    {
+        if (Filtro != "")
+        {
+            if (Filtro == "Nombre")
+            {
+                ListaMateriales = await materialService.Listar(a => a.Estado == Estados.Activo &&  a.Nombre.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Unidad")
+            {
+                ListaMateriales = await materialService.Listar(a => a.Estado == Estados.Activo &&  a.Unidad.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Inactivos")
+            {
+                ListaMateriales = await materialService.Listar(a => a.Estado == Estados.Inactivo );
+            }
+        }
+        else
+        {
+            ListaMateriales = await materialService.Listar(a => a.Estado == Estados.Activo && a.MaterialId > 0);
+        }
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+    }
+}

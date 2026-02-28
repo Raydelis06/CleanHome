@@ -1,0 +1,97 @@
+﻿@using CleanHome.Extensions
+@using CleanHome.Models
+@using CleanHome.Services
+@inject MaterialService materialService
+@inject ProveedorService proveedorService
+@inject NavigationManager navegar
+@inject ToastService toastService
+@page "/Materiales/Crear_Material"
+@rendermode InteractiveServer
+
+<PageTitle>Crear Material</PageTitle>
+<EditForm Model="material" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header text-center">
+                <h5 class="card-title">Crear Material</h5>
+			</div>
+
+			<div class="card-body ">
+                <div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+                    @* Nombre *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Nombre</strong></label>
+                        <InputText class="form-control" @bind-Value="material.Nombre"></InputText>
+                        <ValidationMessage For="@(() => material.Nombre)" />
+                    </div>
+                    @* Cantidad *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Cantidad disponible</strong></label>
+                        <InputNumber class="form-control" @bind-Value="material.CantidadDisponible"></InputNumber>
+                        <ValidationMessage For="@(() => material.CantidadDisponible)" />
+                    </div>
+                    @* Unidad *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Unidad</strong></label>
+                        <InputText class="form-control" @bind-Value="material.Unidad"></InputText>
+                        <ValidationMessage For="@(() => material.Unidad)" />
+                    </div>
+                    @* Precio *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Precio</strong></label>
+                        <InputNumber class="form-control" @bind-Value="material.Precio"></InputNumber>
+                        <ValidationMessage For="@(() => material.Precio)" />
+                    </div>
+                    @* Proveedor *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Proveedor</strong></label>
+                        <InputSelect class="form-control" @bind-Value="@material.ProveedorId">
+                            <option value="0" selected disabled hidden>Seleccione un proveedor...</option>
+                            @foreach (var proveedor in ListaProveedores)
+                            {
+                                <option value="@proveedor.ProveedorId">@proveedor.Nombre</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => material.ProveedorId)" />
+                    </div>
+                </div>
+			</div>
+
+			@*footer*@
+            <div class="card-footer text-center mt-3 d-flex justify-content-center">
+                <div class="d-flex justify-content-between gap-2">
+                    <a href="/Materiales" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+                    <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+                </div>
+				
+			</div>
+		</div>
+	</div>
+</EditForm>
+
+@code
+{
+    private Materiales material = new();
+    private List<Proveedores?> ListaProveedores { get; set; } = new List<Proveedores?>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaProveedores = await proveedorService.Listar(criterio: p => p.ProveedorId > 0);
+    }
+
+    private async Task Guardar()
+    {
+        var guardar = await materialService.Guardar(material);
+        if (guardar)
+        {
+            toastService.ShowSuccess("El material ha sido creado con exito!");
+            navegar.NavigateTo("/Materiales");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al crear el material");
+        }
+    }
+
+}
