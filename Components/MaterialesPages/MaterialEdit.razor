@@ -21,9 +21,7 @@
 					<div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
 						@* Nombre *@
 						<div class="col-md-5">
-							<label class="form-label"><strong>Nombre</strong></label>
-							<InputText class="form-control" @bind-Value="material.Nombre"></InputText>
-							<ValidationMessage For="@(() => material.Nombre)" />
+							<label class="form-label"><strong>Nombre:</strong> @material.Nombre</label>
 						</div>
 						@* Cantidad *@
 						<div class="col-md-5">
