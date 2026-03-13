@@ -37,7 +37,7 @@ namespace CleanHome.Services
         private async Task<bool> Modificar(Empleados empleado)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            contexto.Update(empleado);
+            contexto.Empleados.Update(empleado);
             return await contexto.SaveChangesAsync() > 0;
         }
 
@@ -45,14 +45,14 @@ namespace CleanHome.Services
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
             empleado.Estado = Estados.Inactivo;
-            contexto.Update(empleado);
+            contexto.Empleados.Update(empleado);
             return await contexto.SaveChangesAsync() > 0;
         }
         public async Task<bool> Recuperar(Empleados empleado)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
             empleado.Estado = Estados.Activo;
-            contexto.Update(empleado);
+            contexto.Empleados.Update(empleado);
             return await contexto.SaveChangesAsync() > 0;
         }
 

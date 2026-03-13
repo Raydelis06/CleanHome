@@ -37,7 +37,7 @@ public class ClienteService(IDbContextFactory<Contexto> DbFactory)
     private async Task<bool> Modificar(Clientes cliente)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        contexto.Update(cliente);
+        contexto.Clientes.Update(cliente);
         return await contexto.SaveChangesAsync() > 0;
     }
 
@@ -45,14 +45,14 @@ public class ClienteService(IDbContextFactory<Contexto> DbFactory)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         cliente.Estado = Estados.Inactivo;
-        contexto.Update(cliente);
+        contexto.Clientes.Update(cliente);
         return await contexto.SaveChangesAsync() > 0;
     }
     public async Task<bool> Recuperar(Clientes cliente)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         cliente.Estado = Estados.Activo;
-        contexto.Update(cliente);
+        contexto.Clientes.Update(cliente);
         return await contexto.SaveChangesAsync() > 0;
     }
 

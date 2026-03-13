@@ -28,7 +28,7 @@
                             <option value="Cedula">Cedula</option>
                             <option value="Nombre">Nombre</option>
                             <option value="Telefono">Telefono</option>
-                            <option value="Inactivos">Empleados inactivos</option>
+                            <option value="Inactivos">Empleados eliminados</option>
                         </InputSelect>
                     </div>
 
@@ -119,7 +119,7 @@
             {
                 ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.Telefono.ToLower().Trim().Contains(ValorFiltro));
             }
-            if (Filtro == "Empleados inactivos")
+            if (Filtro == "Inactivos")
             {
                 ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Inactivo );
             }
