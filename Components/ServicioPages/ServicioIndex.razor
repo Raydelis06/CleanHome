@@ -1,5 +1,60 @@
-﻿<h3>ServicioIndex</h3>
+﻿@page "/Servicios"
 
-@code {
+<PageTitle>Registro de Servicios</PageTitle>
 
-}
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-center ">
+            <h5 class="card-title">Registro de Servicios</h5>
+            <a href="/Servicios/Crear_Servicio" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <div class="row">
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Filtro</strong></label>
+                    </div>
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Búsqueda</strong></label>
+                    </div>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <select class="form-control">
+                            <option value="" selected disabled hidden>Elija una opción</option>
+                            <option value="Nombre">Nombre</option>
+                            <option value="Descripcion">Descripción</option>
+                            <option value="Inactivos">Servicios inactivos</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="input-group">
+                            <input class="form-control" placeholder="Buscar..." />
+                            <button type="button" class="btn btn-outline-primary bi bi-search"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-hover">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Precio</th>
+                        <th>Duración (Horas)</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+
+            <div class="card-footer space-between">
+                <label>Cantidad: 0</label>
+            </div>
+        </div>
+    </div>
+</div>
