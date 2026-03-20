@@ -1,50 +1,161 @@
 ﻿@page "/Servicios/Crear_Servicio"
+@using CleanHome.Models
+@using CleanHome.Extensions
+@using CleanHome.Services
+@inject MaterialService materialService
+@inject NavigationManager navegar
+@inject ToastService toastService
+@inject ServicioService servicioService
+@rendermode InteractiveServer
 
 <PageTitle>Crear Servicio</PageTitle>
 
-<div class="container">
-    <div class="card shadow-lg">
-        <div class="card-header text-center">
-            <h5 class="card-title">Crear Servicio</h5>
-        </div>
+<EditForm Model="servicios" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header text-center">
+				<h5 class="card-title">Crear Servicio</h5>
+			</div>
 
-        <div class="card-body ">
-            <div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+			<div class="card-body">
+				<div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
 
-                @* Nombre *@
-                <div class="col-md-5">
-                    <label class="form-label"><strong>Nombre</strong></label>
-                    <input type="text" class="form-control" placeholder="Ej: Limpieza Profunda" />
-                </div>
+					@* Nombre *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Nombre</strong></label>
+						<InputText class="form-control" @bind-Value="servicios.Nombre"/>
+						<ValidationMessage For="@(() => servicios.Nombre)"/>
+					</div>
 
-                @* Precio *@
-                <div class="col-md-5">
-                    <label class="form-label"><strong>Precio</strong></label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        <input type="number" step="0.01" class="form-control" placeholder="0.00" />
-                    </div>
-                </div>
 
-                @* Descripción *@
-                <div class="col-md-5">
-                    <label class="form-label"><strong>Descripción</strong></label>
-                    <input type="text" class="form-control" placeholder="Detalles del servicio..." />
-                </div>
+					@* Precio Servicio *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Precio Servicio</strong></label>
+						<div class="input-group">
+							<span class="input-group-text">$</span>
+							<InputNumber class="form-control" @bind-Value="PrecioServicio"/>
 
-                @* Duración *@
-                <div class="col-md-5">
-                    <label class="form-label"><strong>Duración (Horas)</strong></label>
-                    <input type="number" class="form-control" placeholder="Ej: 2" />
-                </div>
+						</div>
+					</div>
 
-            </div>
-        </div>
+					@* Precio Materiales *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Precio Materiales</strong></label>
+						<div class="input-group">
+							<span class="input-group-text">$</span>
+							<InputNumber TValue="double" class="form-control" Value="PrecioMateriales" ValueExpression="() => PrecioMateriales" readonly/>
 
-        @*footer*@
-        <div class="card-footer text-center mt-2">
-            <a href="/Servicios" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
-            <button type="button" class="btn btn-primary bi bi-floppy"> Guardar</button>
-        </div>
-    </div>
-</div>
+						</div>
+					</div>
+
+					@* Total *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Total Servicio</strong></label>
+						<div class="input-group">
+							<span class="input-group-text">$</span>
+							<InputNumber TValue="double" class="form-control" Value="Total" ValueExpression="() => Total" readonly/>
+						</div>
+					</div>
+
+					@* Descripción *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Descripción</strong></label>
+						<InputText class="form-control" @bind-Value="servicios.Descripcion" placeholder="Detalles del servicio..."/>
+						<ValidationMessage For="@(() => servicios.Descripcion)"/>
+					</div>
+
+					@* Duración *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Duración (Horas)</strong></label>
+						<InputNumber class="form-control" @bind-Value="servicios.Duracion"/>
+						<ValidationMessage For="@(() => servicios.Duracion)"/>
+					</div>
+
+					@* Materiales *@
+					<div class="col-md-5">
+						<label class="form-label"><strong>Materiales</strong></label>
+						<InputSelect class="form-control" @bind-Value="material.MaterialId" @bind-Value:after="CambiodeMaterial">
+							<option value="0" selected disabled hidden>Seleccione un producto...</option>
+							@if (ListaProductos != null)
+							{
+								@foreach (var item in ListaProductos)
+								{
+									<option value="@item.MaterialId">@item.Nombre</option>
+								}
+							}
+						</InputSelect>
+						<ValidationMessage For="@(() => material.MaterialId)"/>
+					</div>
+
+				</div>
+			</div>
+
+			@* footer *@
+			<div class="card-footer text-center mt-2">
+				<a href="/Servicios" class="btn btn-secondary">
+					<span class="bi bi-arrow-left"></span> Volver
+				</a>
+
+				<button type="submit" class="btn btn-primary bi bi-floppy">
+					Guardar
+				</button>
+			</div>
+		</div>
+	</div>
+</EditForm>
+
+@code
+{
+	private Materiales material = new();
+	private Servicios servicios = new();
+	private List<Materiales?> ListaProductos { get; set; } = new();
+
+	private double PrecioServicio { get; set; }
+	private double PrecioMateriales { get; set; }
+	private double Total => PrecioServicio + PrecioMateriales;
+
+	protected override async Task OnInitializedAsync()
+	{
+		ListaProductos = await materialService.Listar(p => p.MaterialId > 0);
+	}
+
+	private void CambiodeMaterial()
+	{
+		
+		var mat = ListaProductos.FirstOrDefault(x => x.MaterialId == material.MaterialId);
+
+		if (mat != null)
+		{
+			PrecioMateriales = mat.Precio;
+		}
+		else
+		{
+			PrecioMateriales = 0;
+		}
+	}
+
+	private async Task Guardar()
+	{
+		var servicio = new Servicios
+		{
+			Nombre = servicios.Nombre,
+			Descripcion = servicios.Descripcion,
+			Duracion = servicios.Duracion,
+			MaterialId = material.MaterialId,
+			Precio = Total
+		};
+
+		var guardar = await servicioService.Guardar(servicio);
+
+		if (guardar)
+		{
+			toastService.ShowSuccess("El servicio ha sido creado con exito");
+			navegar.NavigateTo("/Servicios");
+		}
+		else
+		{
+			toastService.ShowError("Error: no hay materiales disponibles");
+		}
+	}
+}

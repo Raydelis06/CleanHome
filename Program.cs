@@ -17,6 +17,7 @@ builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<EmpleadoService>();
 builder.Services.AddScoped<ProveedorService>();
 builder.Services.AddScoped<MaterialService>();
+builder.Services.AddScoped<ServicioService>();
 //Inyecta bootstrap
 builder.Services.AddBlazorBootstrap();
 

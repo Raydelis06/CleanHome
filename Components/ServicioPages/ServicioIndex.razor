@@ -1,60 +1,130 @@
 ﻿@page "/Servicios"
+@using CleanHome.Models
+@using CleanHome.Extensions
+@using CleanHome.Services
+@inject ServicioService servicioService
+@inject NavigationManager navegar
+@inject ToastService toastService
+@rendermode InteractiveServer
 
 <PageTitle>Registro de Servicios</PageTitle>
 
 <div class="container">
-    <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between align-center ">
-            <h5 class="card-title">Registro de Servicios</h5>
-            <a href="/Servicios/Crear_Servicio" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
-        </div>
-        <div class="card-body">
-            <div class="mb-4">
-                <div class="row">
-                    <div class="col-6">
-                        <label class="col-form-label"><strong>Filtro</strong></label>
-                    </div>
-                    <div class="col-6">
-                        <label class="col-form-label"><strong>Búsqueda</strong></label>
-                    </div>
-                </div>
+	<div class="card shadow-lg">
+		<div class="card-header d-flex justify-content-between align-center ">
+			<h5 class="card-title">Registro de Servicios</h5>
+			<a href="/Servicios/Crear_Servicio" class="btn btn-primary">
+				<span class="bi-plus-square mt-3"></span> Crear
+			</a>
+		</div>
 
-                <div class="row align-items-center">
-                    <div class="col-6">
-                        <select class="form-control">
-                            <option value="" selected disabled hidden>Elija una opción</option>
-                            <option value="Nombre">Nombre</option>
-                            <option value="Descripcion">Descripción</option>
-                            <option value="Inactivos">Servicios inactivos</option>
-                        </select>
-                    </div>
+		<div class="card-body">
+			<div class="mb-4">
+				<div class="row">
+					<div class="col-6">
+						<label class="col-form-label"><strong>Filtro</strong></label>
+					</div>
+					<div class="col-6">
+						<label class="col-form-label"><strong>Búsqueda</strong></label>
+					</div>
+				</div>
 
-                    <div class="col-6">
-                        <div class="input-group">
-                            <input class="form-control" placeholder="Buscar..." />
-                            <button type="button" class="btn btn-outline-primary bi bi-search"></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+				<div class="row align-items-center">
+					<div class="col-6">
+						<InputSelect class="form-control" @bind-Value="Filtro">
+							<option value="" selected disabled hidden>Elija una opción</option>
+							<option value="Nombre">Nombre</option>
+							<option value="Descripcion">Descripción</option>
+							<option value="ServiciosEliminados">Servicios Eliminados</option>
+						</InputSelect>
+					</div>
 
-            <table class="table table-hover">
-                <thead class="table-primary">
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Descripción</th>
-                        <th>Precio</th>
-                        <th>Duración (Horas)</th>
-                        <th>Opciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+					<div class="col-6">
+						<div class="input-group">
+							<input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+							<button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+						</div>
+					</div>
+				</div>
+			</div>
 
-            <div class="card-footer space-between">
-                <label>Cantidad: 0</label>
-            </div>
-        </div>
-    </div>
+			<table class="table table-hover">
+				<thead class="table-primary">
+					<tr>
+						<th>Nombre</th>
+						<th>Descripción</th>
+						<th>Precio</th>
+						<th>Duración (Horas)</th>
+						<th>Opciones</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var servicio in ListaServicios)
+					{
+						<tr>
+							@if (servicio.Estado == Estados.Inactivo)
+							{
+								<td class="text-muted"> @servicio.Nombre</td>
+								<td class="text-muted"> @servicio.Descripcion</td>
+								<td class="text-muted"> @servicio.Precio</td>
+								<td class="text-muted"> @servicio.Duracion</td>
+							}
+							else
+							{
+								<td> @servicio.Nombre</td>
+								<td> @servicio.Descripcion</td>
+								<td> @servicio.Precio</td>
+								<td> @servicio.Duracion</td>
+							}
+							<td class="text-center">
+								<a href="@($"/Servicios/Editar_Servicio/{servicio.ServicioId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+							</td>
+						</tr>
+					}
+
+				</tbody>
+			</table>
+
+			<div class="card-footer space-between">
+				<label>Cantidad: @ListaServicios.Count()</label>
+			</div>
+		</div>
+	</div>
 </div>
+
+@code {
+	private List<Servicios> ListaServicios { get; set; } = new();
+
+	private string Filtro { get; set; } = "";
+	private string ValorFiltro { get; set; } = "";
+
+	protected override async Task OnInitializedAsync()
+	{
+		ListaServicios = await servicioService.Listar(a => a.Estado == Estados.Activo && a.ServicioId > 0);
+	}
+
+	private async Task Buscar()
+	{
+		if (Filtro != "")
+		{
+			if (Filtro == "Nombre")
+			{
+				ListaServicios = await servicioService.Listar(a => a.Estado == Estados.Activo &&  a.Nombre.ToLower().Trim().Contains(ValorFiltro));
+			}
+			if (Filtro == "Descripcion")
+			{
+				ListaServicios = await servicioService.Listar(a => a.Estado == Estados.Activo &&  a.Descripcion.ToLower().Trim().Contains(ValorFiltro));
+			}
+			if (Filtro == "ServiciosEliminados")
+			{
+				ListaServicios = await servicioService.Listar(a => a.Estado == Estados.Inactivo );
+			}
+		}
+		else
+		{
+			ListaServicios = await servicioService.Listar(a => a.Estado == Estados.Activo && a.ServicioId > 0);
+		}
+		Filtro = string.Empty;
+		ValorFiltro = string.Empty;
+	}
+}
