@@ -1,0 +1,109 @@
+﻿@using CleanHome.Extensions
+@using CleanHome.Models
+@using CleanHome.Services
+@inject PropiedadService propiedadService
+@inject TiposPropiedadService tiposPropiedadService
+@inject ClienteService clientesService
+
+@inject NavigationManager navegar
+@inject ToastService toastService
+@page "/Propiedades/Crear_Propiedad"
+@rendermode InteractiveServer
+
+<PageTitle>Crear Propiedad</PageTitle>
+<EditForm Model="propiedad" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title">Crear Propiedad</h5>
+            </div>
+
+            <div class="card-body ">
+                <div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+                    @* Cliente *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Cliente</strong></label>
+                        <InputSelect class="form-control" @bind-Value="@propiedad.ClienteId">
+                            <option value="0" selected disabled hidden>Seleccione un cliente...</option>
+                            @foreach (var cliente in ListaClientes)
+                            {
+                                <option value="@cliente.ClienteId">@cliente.Nombre</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => propiedad.ClienteId)" />
+                    </div>
+                    @* Tipo de propiedad *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Tipo de propiedad</strong></label>
+                        <InputSelect class="form-control" @bind-Value="@propiedad.TipoPropiedadId">
+                            <option value="0" selected disabled hidden>Seleccione un tipo...</option>
+                            @foreach (var tipo in ListaTiposPropiedad)
+                            {
+                                <option value="@tipo.TipoPropiedadId">@tipo.Descripcion</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => propiedad.TipoPropiedadId)" />
+                    </div>
+                    @* Direccion *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Direcci&oacute;n</strong></label>
+                        <InputText class="form-control" @bind-Value="propiedad.Direccion"></InputText>
+                        <ValidationMessage For="@(() => propiedad.Direccion)" />
+                    </div>
+                    @* Cantidad de habitaciones*@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Cantidad de habitaciones</strong></label>
+                        <InputNumber class="form-control" @bind-Value="propiedad.CantidadHabitaciones"></InputNumber>
+                        <ValidationMessage For="@(() => propiedad.CantidadHabitaciones)" />
+                    </div>
+                    @* Tamano *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Tama&ntilde;o (m&sup2;)</strong></label>
+                        <InputNumber class="form-control" @bind-Value="propiedad.TamañoMetrosCuadrados"></InputNumber>
+                        <ValidationMessage For="@(() => propiedad.TamañoMetrosCuadrados)" />
+                    </div>
+                </div>
+            </div>
+
+            @*footer*@
+            <div class="card-footer text-center mt-3 d-flex justify-content-center">
+                <div class="d-flex justify-content-between gap-2">
+                    <a href="/Propiedades" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+                    <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+                </div>
+				
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code
+{
+    private Propiedades propiedad = new();
+    private List<TiposPropiedad> ListaTiposPropiedad { get; set; } = new List<TiposPropiedad>();
+    private List<Clientes> ListaClientes { get; set; } = new List<Clientes>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaTiposPropiedad = await tiposPropiedadService.Listar(criterio: p => p.TipoPropiedadId > 0);
+        ListaClientes = await clientesService.Listar(criterio: p => p.ClienteId > 0);
+
+    }
+
+    private async Task Guardar()
+    {
+        var guardar = await propiedadService.Guardar(propiedad);
+        if (guardar)
+        {
+            toastService.ShowSuccess("La propiedad ha sido creada con exito!");
+            navegar.NavigateTo("/Propiedades");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al crear la propiedad");
+        }
+    }
+
+}
