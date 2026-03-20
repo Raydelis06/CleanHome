@@ -13,5 +13,6 @@ namespace CleanHome.DAL
         public DbSet<Empleados> Empleados { get; set; }
         public DbSet<Proveedores> Proveedores { get; set; }
         public DbSet<Materiales> Materiales { get; set; }
+        public DbSet<Servicios> Servicios { get; set; }
     }
 }
