@@ -26,7 +26,7 @@
                     </div>
                     @* Nombre *@
                     <div class="col-md-5">
-                        <label class="form-label"><strong>Dirección</strong></label>
+                        <label class="form-label"><strong>Nombre</strong></label>
                         <InputText class="form-control" @bind-Value="empleado.Nombre"></InputText>
                         <ValidationMessage For="@(() => empleado.Nombre)" />
                     </div>
@@ -53,9 +53,11 @@
 			</div>
 
 			@*footer*@
-			<div class="card-footer text-center mt-2">
-				<a href="/Clientes" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
-				<button type="submit" class="btn btn-primary bi bi-floppy">Guardar</button>
+            <div class="card-footer text-center mt-3 d-flex justify-content-center">
+                <div class="d-flex justify-content-between gap-2">
+                    <a href="/Empleados" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+                    <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+                </div>
 			</div>
 		</div>
 	</div>

@@ -7,7 +7,7 @@
 <div class="container">
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between align-center ">
-            <h5 class="card-title">Registro de Clientes</h5>
+            <h5 class="card-title">Registro de Empleados</h5>
             <a href="/Empleados/Crear_Empleado" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
         </div>
         <div class="card-body">
@@ -28,7 +28,7 @@
                             <option value="Cedula">Cedula</option>
                             <option value="Nombre">Nombre</option>
                             <option value="Telefono">Telefono</option>
-                            <option value="Inactivos">Empleados inactivos</option>
+                            <option value="Inactivos">Empleados eliminados</option>
                         </InputSelect>
                     </div>
 
@@ -40,7 +40,7 @@
                     </div>
                 </div>
             </div>
-            <table class="table table-hover">
+            <table class="table table-hover table-responsive">
                 <thead >
                     <tr>
                         <th>Cedula</th>
@@ -67,7 +67,9 @@
                             {
                                 <td> @empleado.Cedula</td>
                                 <td> @empleado.Nombre</td>
+                                <td> @empleado.Correo</td>
                                 <td> @empleado.Telefono</td>
+                                <td> @empleado.Cargo</td>
                             }
                             <td class="text-center">
                                 <a href="@($"/Empleados/Editar_Empleado/{empleado.EmpleadoId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
@@ -117,7 +119,7 @@
             {
                 ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.Telefono.ToLower().Trim().Contains(ValorFiltro));
             }
-            if (Filtro == "Empleados inactivos")
+            if (Filtro == "Inactivos")
             {
                 ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Inactivo );
             }
