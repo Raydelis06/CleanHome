@@ -28,18 +28,12 @@ public class ServicioService(IDbContextFactory<Contexto> DbFactory)
     private async Task<bool> Insertar(Servicios servicio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-
         
-        var material = await contexto.Materiales
-            .FirstOrDefaultAsync(m => m.MaterialId == servicio.MaterialId);
-
+        //var servicioEncontrado = await contexto.Servicios
+        //    .FirstOrDefaultAsync(m => m.ServicioId == servicio.ServicioId);
         
-        if (material == null || material.CantidadDisponible <= 0)
-            return false;
-
-        
-        material.CantidadDisponible -= 1;
-
+        //if (servicioEncontrado == null)
+        //    return false;
         contexto.Servicios.Add(servicio);
         return await contexto.SaveChangesAsync() > 0;
     }

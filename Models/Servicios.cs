@@ -16,9 +16,6 @@ namespace CleanHome.Models
         
         [Required(ErrorMessage = "Este campo es obligatorio")]
         public int Duracion { get; set; }
-
-        [Required(ErrorMessage = "Este campo es obligatorio")]
-        public int MaterialId { get; set; }
         public Estados Estado { get; set; } = Estados.Activo;
     }
 }

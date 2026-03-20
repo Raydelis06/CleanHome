@@ -40,23 +40,23 @@
 					</div>
 
 					@* Precio Materiales *@
-					<div class="col-md-5">
+					@* <div class="col-md-5">
 						<label class="form-label"><strong>Precio Materiales</strong></label>
 						<div class="input-group">
 							<span class="input-group-text">$</span>
 							<InputNumber TValue="double" class="form-control" Value="PrecioMateriales" ValueExpression="() => PrecioMateriales" readonly/>
 
 						</div>
-					</div>
+					</div> *@
 
 					@* Total *@
-					<div class="col-md-5">
+					@* <div class="col-md-5">
 						<label class="form-label"><strong>Total Servicio</strong></label>
 						<div class="input-group">
 							<span class="input-group-text">$</span>
 							<InputNumber TValue="double" class="form-control" Value="Total" ValueExpression="() => Total" readonly/>
 						</div>
-					</div>
+					</div> *@
 
 					@* Descripción *@
 					<div class="col-md-5">
@@ -73,7 +73,7 @@
 					</div>
 
 					@* Materiales *@
-					<div class="col-md-5">
+					@* <div class="col-md-5">
 						<label class="form-label"><strong>Materiales</strong></label>
 						<InputSelect class="form-control" @bind-Value="material.MaterialId" @bind-Value:after="CambiodeMaterial">
 							<option value="0" selected disabled hidden>Seleccione un producto...</option>
@@ -86,7 +86,7 @@
 							}
 						</InputSelect>
 						<ValidationMessage For="@(() => material.MaterialId)"/>
-					</div>
+					</div> *@
 
 				</div>
 			</div>
@@ -117,23 +117,23 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		ListaProductos = await materialService.Listar(p => p.MaterialId > 0);
+		// ListaProductos = await materialService.Listar(p => p.MaterialId > 0);
 	}
 
-	private void CambiodeMaterial()
-	{
+	// private void CambiodeMaterial()
+	// {
 		
-		var mat = ListaProductos.FirstOrDefault(x => x.MaterialId == material.MaterialId);
+	// 	var mat = ListaProductos.FirstOrDefault(x => x.MaterialId == material.MaterialId);
 
-		if (mat != null)
-		{
-			PrecioMateriales = mat.Precio;
-		}
-		else
-		{
-			PrecioMateriales = 0;
-		}
-	}
+	// 	if (mat != null)
+	// 	{
+	// 		PrecioMateriales = mat.Precio;
+	// 	}
+	// 	else
+	// 	{
+	// 		PrecioMateriales = 0;
+	// 	}
+	// }
 
 	private async Task Guardar()
 	{
@@ -142,7 +142,7 @@
 			Nombre = servicios.Nombre,
 			Descripcion = servicios.Descripcion,
 			Duracion = servicios.Duracion,
-			MaterialId = material.MaterialId,
+			// MaterialId = material.MaterialId,
 			Precio = Total
 		};
 
@@ -155,7 +155,7 @@
 		}
 		else
 		{
-			toastService.ShowError("Error: no hay materiales disponibles");
+			toastService.ShowError("Error: no se pudo guardar el servicio");
 		}
 	}
 }
