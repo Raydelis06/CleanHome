@@ -1,14 +1,14 @@
 ﻿
 @using CleanHome.Models
 @using CleanHome.Services
-@inject ClienteService clienteService;
-@page "/Clientes"
-<PageTitle>Registro de Cliente</PageTitle>
+@inject ProveedorService proveedorService;
+@page "/Proveedores"
+<PageTitle>Registro de Proveedores</PageTitle>
 <div class="container">
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between align-center ">
-            <h5 class="card-title">Registro de Clientes</h5>
-            <a href="/Clientes/Crear_Cliente" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
+            <h5 class="card-title">Registro de Proveedores</h5>
+            <a href="/Proveedores/Crear_Proveedor" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
         </div>
         <div class="card-body">
             <div class="mb-4">
@@ -25,10 +25,9 @@
                     <div class="col-6">
                         <InputSelect class="form-control" @bind-Value="Filtro">
                             <option value="" selected disabled hidden>Elija una opción</option>
-                            <option value="Cedula">Cedula</option>
                             <option value="Nombre">Nombre</option>
                             <option value="Telefono">Telefono</option>
-                            <option value="Inactivos">Clientes eliminados</option>
+                            <option value="Inactivos">Proveedores eliminados</option>
                         </InputSelect>
                     </div>
 
@@ -43,30 +42,30 @@
             <table class="table table-hover table-responsive">
                 <thead >
                     <tr>
-                        <th>Cedula</th>
                         <th>Nombre</th>
+                        <th>Direcci&oacute;n</th>
                         <th>Telefono</th>
                         <th>Opciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var cliente in ListaClientes)
+                    @foreach (var proveedor in ListaProveedores)
                     {
                         <tr>
-                            @if(cliente.Estado == Estados.Inactivo)
+                            @if(proveedor.Estado == Estados.Inactivo)
                             {
-                                <td class="text-muted"> @cliente.Cedula</td>
-                                <td class="text-muted"> @cliente.Nombre</td>
-                                <td class="text-muted"> @cliente.Telefono</td>
+                                <td class="text-muted"> @proveedor.Nombre</td>
+                                <td class="text-muted"> @proveedor.Direccion</td>
+                                <td class="text-muted"> @proveedor.Telefono</td>
                             }
                             else
                             {
-                                <td> @cliente.Cedula</td>
-                                <td> @cliente.Nombre</td>
-                                <td> @cliente.Telefono</td>
+                                <td> @proveedor.Nombre</td>
+                                <td> @proveedor.Direccion</td>
+                                <td> @proveedor.Telefono</td>
                             }
                             <td class="text-center">
-                                <a href="@($"/Clientes/Editar_Cliente/{@cliente.ClienteId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                                <a href="@($"/Proveedores/Editar_Proveedor/{proveedor.ProveedorId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
                             </td>
                         </tr>
                     }
@@ -74,20 +73,20 @@
             </table>
 
             <div class="card-footer space-between">
-                <label>Cantidad: @ListaClientes.Count()</label>
+                <label>Cantidad: @ListaProveedores.Count()</label>
             </div>
         </div>
     </div>
 </div>
 
 @code {
-    public List<Clientes> ListaClientes { get; set; } = new List<Clientes>();
+    public List<Proveedores> ListaProveedores { get; set; } = new List<Proveedores>();
     public string Filtro { get; set; } = string.Empty;
     public string ValorFiltro { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo && a.ClienteId > 0);
+        ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Activo && a.ProveedorId > 0);
     }
     public async Task Buscar()
     {
@@ -95,24 +94,20 @@
         {
             if (Filtro == "Nombre")
             {
-                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo &&  a.Nombre.ToLower().Trim().Contains(ValorFiltro));
-            }
-            if (Filtro == "Cedula")
-            {
-                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo && a.Cedula.ToLower().Trim().Contains(ValorFiltro));
+                ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Activo &&  a.Nombre.ToLower().Trim().Contains(ValorFiltro));
             }
             if (Filtro == "Telefono")
             {
-                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo &&  a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+                ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Activo &&  a.Telefono.ToLower().Trim().Contains(ValorFiltro));
             }
             if (Filtro == "Inactivos")
             {
-                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Inactivo );
+                ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Inactivo );
             }
         }
         else
         {
-            ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo && a.ClienteId > 0);
+            ListaProveedores = await proveedorService.Listar(a => a.Estado == Estados.Activo && a.ProveedorId > 0);
         }
         Filtro = string.Empty;
         ValorFiltro = string.Empty;

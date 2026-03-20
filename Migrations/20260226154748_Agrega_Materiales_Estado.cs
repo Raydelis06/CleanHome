@@ -5,14 +5,14 @@
 namespace CleanHome.Migrations
 {
     /// <inheritdoc />
-    public partial class Agrega_Estado_Clientes : Migration
+    public partial class Agrega_Materiales_Estado : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
                 name: "Estado",
-                table: "Clientes",
+                table: "Materiales",
                 type: "int",
                 nullable: false,
                 defaultValue: 0);
@@ -23,7 +23,7 @@ namespace CleanHome.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "Estado",
-                table: "Clientes");
+                table: "Materiales");
         }
     }
 }

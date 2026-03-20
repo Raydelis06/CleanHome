@@ -1,14 +1,14 @@
 ﻿
 @using CleanHome.Models
 @using CleanHome.Services
-@inject ClienteService clienteService;
-@page "/Clientes"
-<PageTitle>Registro de Cliente</PageTitle>
+@inject EmpleadoService empleadoService;
+@page "/Empleados"
+<PageTitle>Registro de Empleados</PageTitle>
 <div class="container">
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between align-center ">
-            <h5 class="card-title">Registro de Clientes</h5>
-            <a href="/Clientes/Crear_Cliente" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
+            <h5 class="card-title">Registro de Empleados</h5>
+            <a href="/Empleados/Crear_Empleado" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
         </div>
         <div class="card-body">
             <div class="mb-4">
@@ -28,7 +28,7 @@
                             <option value="Cedula">Cedula</option>
                             <option value="Nombre">Nombre</option>
                             <option value="Telefono">Telefono</option>
-                            <option value="Inactivos">Clientes eliminados</option>
+                            <option value="Inactivos">Empleados eliminados</option>
                         </InputSelect>
                     </div>
 
@@ -45,28 +45,34 @@
                     <tr>
                         <th>Cedula</th>
                         <th>Nombre</th>
+                        <th>Correo</th>
                         <th>Telefono</th>
+                        <th>Cargo</th>
                         <th>Opciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var cliente in ListaClientes)
+                    @foreach (var empleado in ListaEmpleados)
                     {
                         <tr>
-                            @if(cliente.Estado == Estados.Inactivo)
+                            @if (empleado.Estado == Estados.Inactivo)
                             {
-                                <td class="text-muted"> @cliente.Cedula</td>
-                                <td class="text-muted"> @cliente.Nombre</td>
-                                <td class="text-muted"> @cliente.Telefono</td>
+                                <td class="text-muted"> @empleado.Cedula</td>
+                                <td class="text-muted"> @empleado.Nombre</td>
+                                <td class="text-muted"> @empleado.Correo</td>
+                                <td class="text-muted"> @empleado.Telefono</td>
+                                <td class="text-muted"> @empleado.Cargo</td>
                             }
                             else
                             {
-                                <td> @cliente.Cedula</td>
-                                <td> @cliente.Nombre</td>
-                                <td> @cliente.Telefono</td>
+                                <td> @empleado.Cedula</td>
+                                <td> @empleado.Nombre</td>
+                                <td> @empleado.Correo</td>
+                                <td> @empleado.Telefono</td>
+                                <td> @empleado.Cargo</td>
                             }
                             <td class="text-center">
-                                <a href="@($"/Clientes/Editar_Cliente/{@cliente.ClienteId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                                <a href="@($"/Empleados/Editar_Empleado/{empleado.EmpleadoId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
                             </td>
                         </tr>
                     }
@@ -74,20 +80,20 @@
             </table>
 
             <div class="card-footer space-between">
-                <label>Cantidad: @ListaClientes.Count()</label>
+                <label>Cantidad: @ListaEmpleados.Count()</label>
             </div>
         </div>
     </div>
 </div>
 
 @code {
-    public List<Clientes> ListaClientes { get; set; } = new List<Clientes>();
+    public List<Empleados> ListaEmpleados { get; set; } = new List<Empleados>();
     public string Filtro { get; set; } = string.Empty;
     public string ValorFiltro { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo && a.ClienteId > 0);
+        ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.EmpleadoId > 0);
     }
     public async Task Buscar()
     {
@@ -95,24 +101,32 @@
         {
             if (Filtro == "Nombre")
             {
-                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo &&  a.Nombre.ToLower().Trim().Contains(ValorFiltro));
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.Nombre.ToLower().Trim().Contains(ValorFiltro));
             }
             if (Filtro == "Cedula")
             {
-                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo && a.Cedula.ToLower().Trim().Contains(ValorFiltro));
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.Cedula.ToLower().Trim().Contains(ValorFiltro));
             }
             if (Filtro == "Telefono")
             {
-                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo &&  a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo &&  a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Cargo")
+            {
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.Telefono.ToLower().Trim().Contains(ValorFiltro));
+            }
+            if (Filtro == "Correo")
+            {
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.Telefono.ToLower().Trim().Contains(ValorFiltro));
             }
             if (Filtro == "Inactivos")
             {
-                ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Inactivo );
+                ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Inactivo );
             }
         }
         else
         {
-            ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo && a.ClienteId > 0);
+            ListaEmpleados = await empleadoService.Listar(a => a.Estado == Estados.Activo && a.EmpleadoId > 0);
         }
         Filtro = string.Empty;
         ValorFiltro = string.Empty;
