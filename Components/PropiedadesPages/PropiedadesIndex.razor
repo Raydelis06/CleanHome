@@ -1,0 +1,227 @@
+﻿@using CleanHome.Models
+@using CleanHome.Services
+@inject PropiedadService propiedadService;
+@inject ClienteService clienteService;
+@inject TiposPropiedadService TiposPropiedadService;
+
+@page "/Propiedades"
+<PageTitle>Registro de Propiedades</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-center ">
+            <h5 class="card-title">Registro de Propiedades</h5>
+            <a href="/Propiedades/Crear_Propiedad" class="btn btn-primary"> <span class="bi-plus-square mt-3"></span> Crear</a>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <div class="row">
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Filtro</strong></label>
+                    </div>
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Búsqueda</strong></label>
+                    </div>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <InputSelect class="form-control" @bind-Value="Filtro">
+                            <option value="" selected disabled hidden>Elija una opción</option>
+                            <option value="Cliente">Cliente</option>
+                            <option value="Tipo">Tipo de propiedad</option>
+                            <option value="Inactivos">Propiedades eliminadas</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="input-group">
+                            <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+                            <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Tipo de propiedad</th>
+                        <th>Direcci&oacute;n</th>
+                        <th>Cantidad de habitaciones</th>
+                        <th>Tama&ntilde;o (m&sup2;)</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var propiedad in ListaPropiedades)
+                    {
+                        <tr>
+                            @if (propiedad.Estado == Estados.Inactivo)
+                            {
+                                <td class="text-muted">
+                                    @{
+                                        Clientes? clienteEncontrado = null;
+                                    }
+                                    @foreach (var cliente in ListaClientes)
+                                    {
+                                        @if (cliente.ClienteId == propiedad.ClienteId)
+                                        {
+                                            clienteEncontrado = cliente;
+                                        }
+                                    }
+                                    @if (clienteEncontrado != null)
+                                    {
+                                        <span>@clienteEncontrado.Nombre</span>
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </td>
+                                <td class="text-muted">
+                                    @{
+                                        TiposPropiedad? tipoEncontrado = null;
+                                    }
+                                    @foreach (var tipo in ListaTiposPropiedad)
+                                    {
+                                        @if (tipo.TipoPropiedadId == propiedad.TipoPropiedadId)
+                                        {
+                                            tipoEncontrado = tipo;
+                                        }
+                                    }
+                                    @if (tipoEncontrado != null)
+                                    {
+                                        <span>@tipoEncontrado.Descripcion</span>
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </td>
+                                <td class="text-muted"> @propiedad.Direccion</td>
+                                <td class="text-muted"> @propiedad.CantidadHabitaciones</td>
+                                <td class="text-muted"> @propiedad.TamañoMetrosCuadrados</td>
+                            }
+                            else
+                            {
+                                <td>
+                                    @{
+                                        Clientes? clienteEncontrado = null;
+                                    }
+                                    @foreach (var cliente in ListaClientes)
+                                    {
+                                        @if (cliente.ClienteId == propiedad.ClienteId)
+                                        {
+                                            clienteEncontrado = cliente;
+                                        }
+                                    }
+                                    @if (clienteEncontrado != null)
+                                    {
+                                        <span>@clienteEncontrado.Nombre</span>
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        TiposPropiedad? tipoEncontrado = null;
+                                    }
+                                    @foreach (var tipo in ListaTiposPropiedad)
+                                    {
+                                        @if (tipo.TipoPropiedadId == propiedad.TipoPropiedadId)
+                                        {
+                                            tipoEncontrado = tipo;
+                                        }
+                                    }
+                                    @if (tipoEncontrado != null)
+                                    {
+                                        <span>@tipoEncontrado.Descripcion</span>
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </td>
+                                <td> @propiedad.Direccion</td>
+                                <td> @propiedad.CantidadHabitaciones</td>
+                                <td> @propiedad.TamañoMetrosCuadrados</td>
+                            }
+                            <td class="text-center">
+                                <a href="@($"/Propiedades/Editar_Propiedad/{propiedad.PropiedadId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="card-footer space-between">
+                <label>Cantidad: @ListaPropiedades.Count()</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Propiedades> ListaPropiedades { get; set; } = new List<Propiedades>();
+    public List<Clientes> ListaClientes { get; set; } = new List<Clientes>();
+    public List<TiposPropiedad> ListaTiposPropiedad { get; set; } = new List<TiposPropiedad>();
+
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+
+    Clientes? clienteEncontrado;
+    TiposPropiedad? tipoEncontrado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaPropiedades = await propiedadService.Listar(a => a.Estado == Estados.Activo && a.PropiedadId > 0);
+        ListaClientes = await clienteService.Listar(a => a.Estado == Estados.Activo && a.ClienteId > 0);
+        ListaTiposPropiedad = await TiposPropiedadService.Listar(a => a.Estado == Estados.Activo && a.TipoPropiedadId > 0);
+
+    }
+    public async Task Buscar()
+    {
+        if (Filtro != "")
+        {
+            if (Filtro == "Cliente")
+            {
+                var idsClientes = ListaClientes
+                    .Where(c => c.Nombre.ToLower().Contains(ValorFiltro.ToLower().Trim())).Select(c => c.ClienteId).ToList();
+
+                if (idsClientes.Any())
+                {
+                    ListaPropiedades = await propiedadService.Listar(a => a.Estado == Estados.Activo && idsClientes.Contains(a.ClienteId));
+                }
+                else
+                {
+                    ListaPropiedades = new List<Propiedades>(); 
+                }
+            }
+            if (Filtro == "Tipo")
+            {
+                var idsTipos = ListaTiposPropiedad.Where(t => t.Descripcion.ToLower().Contains(ValorFiltro.ToLower().Trim())).Select(t => t.TipoPropiedadId).ToList();
+
+                if (idsTipos.Any())
+                {
+                    ListaPropiedades = await propiedadService.Listar(a => a.Estado == Estados.Activo && idsTipos.Contains(a.TipoPropiedadId));
+                }
+                else
+                {
+                    ListaPropiedades = new List<Propiedades>();
+                }
+            }
+            if (Filtro == "Inactivos")
+            {
+                ListaPropiedades = await propiedadService.Listar(a => a.Estado == Estados.Inactivo);
+            }
+        }
+        else
+        {
+            ListaPropiedades = await propiedadService.Listar(a => a.Estado == Estados.Activo && a.PropiedadId > 0);
+        }
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+    }
+}
