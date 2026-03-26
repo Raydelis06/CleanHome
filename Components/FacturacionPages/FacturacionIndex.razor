@@ -1,0 +1,171 @@
+﻿@page "/Facturacion"
+@using CleanHome.Models
+@using CleanHome.Extensions
+@using CleanHome.Services
+@inject FacturaService facturaService
+@inject NavigationManager navegar
+@inject ToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Registro de Facturas</PageTitle>
+
+<div class="container">
+	<div class="card shadow-lg">
+		<div class="card-header d-flex justify-content-between align-center ">
+			<h5 class="card-title">Registro de Facturas</h5>
+			<a href="/Facturas/Crear" class="btn btn-primary">
+				<span class="bi-plus-square mt-3"></span> Crear
+			</a>
+		</div>
+
+		<div class="card-body">
+			<div class="mb-4">
+				<div class="row">
+					<div class="col-6">
+						<label class="col-form-label"><strong>Filtro</strong></label>
+					</div>
+					<div class="col-6">
+						<label class="col-form-label"><strong>Búsqueda</strong></label>
+					</div>
+				</div>
+
+				<div class="row align-items-center">
+					<div class="col-6">
+						<InputSelect class="form-control" @bind-Value="Filtro">
+							<option value="" selected disabled hidden>Elija una opción</option>
+							<option value="Codigo">Codigo de Factura</option>
+							<option value="Nombre">Nombre</option>
+							<option value="Fecha">Fecha</option>
+							<option value="Pagada">Pagadas</option>
+							<option value="Pendiente">Pendiente</option>
+							<option value="FacturasEliminadas">Facturas Eliminadas</option>
+						</InputSelect>
+					</div>
+
+					<div class="col-6">
+						<div class="input-group">
+							<div class="input-group">
+
+								@if (Filtro == "Fecha")
+								{
+									<InputDate @bind-Value="FechaFiltro" class="form-control" />
+								}
+								else
+								{
+									<input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+								}
+
+								<button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<table class="table table-hover">
+				<thead class="table-primary">
+					<tr>
+						<th>Codigo</th>
+						<th>Nombre</th>
+						<th>Fecha</th>
+						<th>Monto Total</th>
+						<th>Estado</th>
+						<th>Opciones</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var factura in ListaFacturas)
+					{
+						<tr>
+							@if (factura.Estado == Estados.Inactivo)
+							{
+								<td class="text-muted"> @factura.CodigoFactura</td>
+								<td class="text-muted"> @factura.Nombre</td>
+								<td class="text-muted"> @factura.Fecha</td>
+								<td class="text-muted"> @factura.MontoTotal</td>
+								<td class="text-muted"> @factura.EstadoFactura</td>
+							}
+							else
+							{
+								<td> @factura.CodigoFactura</td>
+								<td> @factura.Nombre</td>
+								<td> @factura.Fecha</td>
+								<td> @factura.MontoTotal</td>
+								<td> @factura.EstadoFactura</td>
+							}
+							<td class="text-center">
+								<a href="@($"/Facturas/Editar_Factura/{factura.FacturaId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+							</td>
+						</tr>
+					}
+
+				</tbody>
+			</table>
+
+			<div class="card-footer space-between">
+				<label>Cantidad: @ListaFacturas.Count()</label>
+			</div>
+		</div>
+	</div>
+</div>
+
+@code {
+	DateTime? FechaFiltro { get; set; }
+	private List<Facturas> ListaFacturas { get; set; } = new();
+
+	private string Filtro { get; set; } = "";
+	private string ValorFiltro { get; set; } = "";
+
+	protected override async Task OnInitializedAsync()
+	{
+		ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.FacturaId > 0);
+	}
+
+	private async Task Buscar()
+	{
+		if (Filtro != "")
+		{
+			if (Filtro == "Codigo")
+			{
+				ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.CodigoFactura.ToLower().Trim().Contains(ValorFiltro));
+			}
+			if (Filtro == "Nombre")
+			{
+				ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.Nombre.ToLower().Trim().Contains(ValorFiltro));
+			}
+			if (Filtro == "Fecha")
+			{
+				DateTime fechaFiltro;
+				if (DateTime.TryParse(ValorFiltro, out fechaFiltro))
+				{
+					ListaFacturas = await facturaService.Listar(a => 
+						a.Estado == Estados.Activo && 
+						a.Fecha.Date == fechaFiltro.Date);
+				}
+			}
+			if (Filtro == "FacturasEliminadas")
+			{
+				ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Inactivo);
+			}
+			if (Filtro == "Pagada")
+			{
+				ListaFacturas = await facturaService.Listar(a =>
+					a.Estado == Estados.Activo &&
+					a.EstadoFactura == EstadosFactura.Pagada);
+			}
+
+			if (Filtro == "Pendiente")
+			{
+				ListaFacturas = await facturaService.Listar(a =>
+					a.Estado == Estados.Activo &&
+					a.EstadoFactura == EstadosFactura.Pendiente);
+			}
+		}
+		else
+		{
+			ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.FacturaId > 0);
+		}
+		Filtro = string.Empty;
+		ValorFiltro = string.Empty;
+	}
+}
