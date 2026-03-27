@@ -1,0 +1,90 @@
+﻿@using CleanHome.Extensions
+@using CleanHome.Models
+@using CleanHome.Services
+@inject OrdenCompraService ordenService
+@inject ProveedorService proveedorService
+@inject NavigationManager navegar
+@inject ToastService toastService
+
+@page "/OrdenesCompra/Crear_Orden"
+@rendermode InteractiveServer
+
+<PageTitle>Crear Orden de Compra</PageTitle>
+
+<EditForm Model="orden" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+
+            <div class="card-header text-center">
+                <h5 class="card-title">Crear Orden de Compra</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Proveedor</strong></label>
+                        <InputSelect class="form-control" @bind-Value="orden.ProveedorId">
+                            <option value="0" disabled selected>Seleccione</option>
+                            @foreach (var proveedor in ListaProveedores)
+                            {
+                                <option value="@proveedor.ProveedorId">
+                                    @proveedor.Nombre
+                                </option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Fecha</strong></label>
+                        <InputDate class="form-control" @bind-Value="orden.Fecha"></InputDate>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="card-footer text-center mt-3 d-flex justify-content-center">
+                <div class="d-flex justify-content-between gap-2">
+                    <a href="/OrdenesCompra" class="btn btn-secondary">
+                        <span class="bi bi-arrow-left"></span> Volver
+                    </a>
+
+                    <button type="submit" class="btn btn-primary bi bi-floppy">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</EditForm>
+
+@code {
+
+    private OrdenCompra orden = new();
+    private List<Proveedores> ListaProveedores = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaProveedores = await proveedorService.Listar(p => true);
+        orden.Fecha = DateTime.Now;
+    }
+
+    private async Task Guardar()
+    {
+        var guardar = await ordenService.Guardar(orden);
+
+        if (guardar)
+        {
+            toastService.ShowSuccess("La orden ha sido creada con éxito!");
+            navegar.NavigateTo("/OrdenesCompra");
+        }
+        else
+        {
+            toastService.ShowError("Error al crear la orden");
+        }
+    }
+}

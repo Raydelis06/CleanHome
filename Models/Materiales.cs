@@ -20,5 +20,6 @@ namespace CleanHome.Models
         [Range(1, int.MaxValue, ErrorMessage = "Este campo es obligatorio")]
         public int ProveedorId { get; set; }
         public Estados Estado { get; set; } = Estados.Activo;
+        public int Cantidad { get; internal set; }
     }
 }

@@ -8,7 +8,8 @@ namespace CleanHome.DAL
         public Contexto(DbContextOptions<Contexto> options) : base(options)
         {
         }
-
+        public DbSet<OrdenCompra> OrdenesCompra { get; set; }
+        public DbSet<OrdenCompraDetalle> OrdenesCompraDetalle { get; set; }
         public DbSet<Clientes> Clientes { get; set; }
         public DbSet<Empleados> Empleados { get; set; }
         public DbSet<Proveedores> Proveedores { get; set; }

@@ -1,0 +1,106 @@
+﻿@using CleanHome.Models
+@using CleanHome.Services
+@inject OrdenCompraService ordenService
+@inject NavigationManager navegar
+
+@page "/OrdenesCompra/Detalle/{OrdenCompraId:int}"
+@rendermode InteractiveServer
+
+<PageTitle>Detalle de Orden</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+
+        <!-- HEADER -->
+        <div class="card-header text-center">
+            <h5 class="card-title">Detalle de Orden de Compra</h5>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body">
+
+            @if (orden == null)
+            {
+                <p>Cargando...</p>
+            }
+            else
+            {
+                <!-- INFO GENERAL -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <strong>Proveedor:</strong> @orden.Proveedor?.Nombre
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Fecha:</strong> @orden.Fecha.ToShortDateString()
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Estado:</strong> @orden.Estado
+                    </div>
+                </div>
+
+                <!-- TABLA DETALLES -->
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in orden.Detalles)
+                        {
+                            <tr>
+                                <td>@item.Material?.Nombre</td>
+                                <td>@item.Cantidad</td>
+                                <td>@item.Precio</td>
+                                <td>@(item.Cantidad* item.Precio)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <!-- TOTAL -->
+                <div class="text-end mt-3">
+                    <h5><strong>Total: @orden.Total</strong></h5>
+                </div>
+            }
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="card-footer text-center d-flex justify-content-center">
+            <div class="d-flex gap-2">
+
+                <a href="/OrdenesCompra" class="btn btn-secondary">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int OrdenCompraId { get; set; }
+
+    private OrdenCompra? orden;
+
+    protected override async Task OnInitializedAsync()
+    {
+        orden = await ordenService.Buscar(OrdenCompraId);
+    }
+
+    private async Task Confirmar()
+    {
+        var confirmado = await ordenService.Confirmar(OrdenCompraId);
+
+        if (confirmado)
+        {
+            orden = await ordenService.Buscar(OrdenCompraId);
+        }
+    }
+}
