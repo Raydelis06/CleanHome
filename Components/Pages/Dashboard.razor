@@ -1,7 +1,203 @@
-﻿@page "/"
+﻿@using CleanHome.Extensions
+@using CleanHome.Models
+@using CleanHome.Services
+@using System.Globalization
+@page "/"
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container-fluid py-4 bg-light min-vh-100">
+    <div class="row">
 
-Welcome to your new app.
+        <div class="col-lg-8 pe-lg-4">
+            <p class="text-muted mb-0">Welcome Back</p>
+            <h1 class="mb-4 fw-normal text-dark">Dashboard</h1>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary shadow-sm h-100 rounded-4 border-0">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center p-4">
+                            <h6 class="card-title fw-normal mb-2">Solicitudes pendientes</h6>
+                            <h2 class="card-text fw-bold mb-0">@listaSolicitudes.Count(s => s.Estado == "Pendiente")</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-secondary shadow-sm h-100 rounded-4 border-0">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center p-4">
+                            <h6 class="card-title fw-normal mb-2">Solicitudes completadas</h6>
+                            <h2 class="card-text fw-bold mb-0">@listaSolicitudes.Count(s => s.Estado == "Completada")</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary shadow-sm h-100 rounded-4 border-0">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center p-4">
+                            <h6 class="card-title fw-normal mb-2">Total Clientes</h6>
+                            <h2 class="card-text fw-bold mb-0">@TotalClientes</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm rounded-4 border-0 mt-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0">
+                            @(fechaSeleccionada == null ? "Solicitudes recientes" : $"Solicitudes del {fechaSeleccionada.Value.ToString("dd/MM/yyyy")}")
+                        </h5>
+                        @if (fechaSeleccionada != null)
+                        {
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" @onclick="MostrarTodas">Ver Todas</button>
+                        }
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle border-bottom-0 mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="fw-medium border-0">Id</th>
+                                    <th class="fw-medium border-0">Fecha</th>
+                                    <th class="fw-medium border-0">Cliente</th>
+                                    <th class="fw-medium border-0">Descripción</th>
+                                    <th class="fw-medium border-0">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!solicitudesEnTabla.Any())
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-5">No hay solicitudes para mostrar.</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var sol in solicitudesEnTabla)
+                                    {
+                                        <tr>
+                                            <td class="text-muted">@sol.Id</td>
+                                            <td>@sol.Fecha.ToString("dd/MM/yyyy")</td>
+                                            <td>@sol.Cliente</td>
+                                            <td>@sol.Descripcion</td>
+                                            <td>
+                                                <span class="badge rounded-pill @(sol.Estado == "Completada" ? "bg-success" : "bg-warning text-dark") px-3 py-2">
+                                                    @sol.Estado
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mt-5 mt-lg-0">
+            <h4 class="mb-3 fw-normal text-dark">Agenda</h4>
+
+            <div class="card text-white shadow-sm rounded-4 border-0" style="background-color: #5c85a5;">
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <span class="fs-5">@CultureInfo.CurrentCulture.TextInfo.ToTitleCase(mesActual.ToString("MMMM", new CultureInfo("es-ES")))</span>
+                        <strong class="fs-4 ms-1">@mesActual.Year</strong>
+                    </div>
+
+                    <table class="w-100 text-center">
+                        <thead class="text-white-50 small">
+                            <tr>
+                                <th class="fw-normal pb-3">Dom</th>
+                                <th class="fw-normal pb-3">Lun</th>
+                                <th class="fw-normal pb-3">Mar</th>
+                                <th class="fw-normal pb-3">Mié</th>
+                                <th class="fw-normal pb-3">Jue</th>
+                                <th class="fw-normal pb-3">Vie</th>
+                                <th class="fw-normal pb-3">Sáb</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int currentDay = 1;
+                                while (currentDay <= diasEnMes)
+                                {
+                                    <tr>
+                                        @for (int d = 0; d < 7; d++)
+                                        {
+                                            <td class="py-1">
+                                                @if (currentDay == 1 && d < offsetDias)
+                                                {
+                                                    <span></span>
+                                                }
+                                                else if (currentDay <= diasEnMes)
+                                                {
+                                                    var fechaBucle = new DateTime(mesActual.Year, mesActual.Month, currentDay);
+                                                    bool hasSolicitudes = listaSolicitudes.Any(s => s.Fecha.Date == fechaBucle.Date);
+                                                    bool isSelected = fechaSeleccionada == fechaBucle.Date;
+
+                                                    string btnClass = "btn btn-sm rounded-circle text-white border-0 fw-medium";
+                                                    if (isSelected) btnClass = "btn btn-sm rounded-circle btn-light text-primary fw-bold";
+                                                    else if (hasSolicitudes) btnClass = "btn btn-sm rounded-circle btn-danger text-white fw-bold";
+
+                                                    <button class="@btnClass" @onclick="() => SeleccionarFecha(fechaBucle)">
+                                                        @currentDay
+                                                    </button>
+                                                    currentDay++;
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private DateTime mesActual = new DateTime(2026, 2, 1);
+    private int diasEnMes => DateTime.DaysInMonth(mesActual.Year, mesActual.Month);
+    private int offsetDias => (int)new DateTime(mesActual.Year, mesActual.Month, 1).DayOfWeek;
+
+    private int TotalClientes = 20;
+    private DateTime? fechaSeleccionada = null;
+
+    private List<SolicitudDTO> listaSolicitudes = new();
+    private List<SolicitudDTO> solicitudesEnTabla = new();
+
+    protected override void OnInitialized()
+    {
+        listaSolicitudes = new List<SolicitudDTO>
+        {
+
+        };
+
+        MostrarTodas();
+    }
+
+    private void SeleccionarFecha(DateTime fecha)
+    {
+        fechaSeleccionada = fecha;
+        solicitudesEnTabla = listaSolicitudes.Where(s => s.Fecha.Date == fecha.Date).ToList();
+    }
+
+    private void MostrarTodas()
+    {
+        fechaSeleccionada = null;
+        solicitudesEnTabla = listaSolicitudes.OrderByDescending(s => s.Fecha).Take(5).ToList();
+    }
+
+    public class SolicitudDTO
+    {
+        public int Id { get; set; }
+        public DateTime Fecha { get; set; }
+        public string Cliente { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
+        public string Estado { get; set; } = string.Empty;
+    }
+}
