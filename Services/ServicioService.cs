@@ -29,11 +29,6 @@ public class ServicioService(IDbContextFactory<Contexto> DbFactory)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         
-        //var servicioEncontrado = await contexto.Servicios
-        //    .FirstOrDefaultAsync(m => m.ServicioId == servicio.ServicioId);
-        
-        //if (servicioEncontrado == null)
-        //    return false;
         contexto.Servicios.Add(servicio);
         return await contexto.SaveChangesAsync() > 0;
     }
@@ -69,11 +64,6 @@ public class ServicioService(IDbContextFactory<Contexto> DbFactory)
     }
 
     
-    public async Task<List<Servicios>> Listar()
-    {
-        await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Servicios.AsNoTracking().ToListAsync();
-    }
 
     public async Task<Servicios?> Buscar(int servicioId)
     {

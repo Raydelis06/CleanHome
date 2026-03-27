@@ -6,6 +6,7 @@
 @inject NavigationManager navegar
 @inject ToastService toastService
 @inject FacturaService facturaService
+@inject ServicioService servicioService
 @rendermode InteractiveServer
 
 <PageTitle>Crear factura</PageTitle>
@@ -15,68 +16,90 @@
 	<div class="container">
 		<div class="card shadow-lg">
 			<div class="card-header text-center">
-				<h5 class="card-title">Crear tipo de servicio</h5>
+				<h5 class="card-title">Crear Factura</h5>
 			</div>
 
 			<div class="card-body">
 				<div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+                    
+                    @* Codigo Factura *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Codigo</strong></label>
+                        <InputText class="form-control" @bind-Value="facturas.CodigoFactura" readonly />
+                    </div>
 
-					@* Nombre *@
+                    @* Nombre *@
 					<div class="col-md-5">
 						<label class="form-label"><strong>Nombre</strong></label>
 						<InputText class="form-control" @bind-Value="facturas.Nombre" />
 						<ValidationMessage For="@(() => facturas.Nombre)" />
 					</div>
+                    @* Servicios *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Servicios</strong></label>
+                        <InputSelect class="form-control" @bind-Value="servicio.ServicioId" @bind-Value:after="CambiodeServicio">
+                            <option value="0" selected disabled hidden>Seleccione un servicio...</option>
+                            @if (ListaServicios != null)
+                            {
+                                @foreach (var item in ListaServicios)
+                                {
+                                    <option value="@item.ServicioId">@item.Nombre</option>
+                                }
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => servicio.ServicioId)"/>
+                         
+                        @* Precio Servicio *@
+                        <label class="form-label"><strong>Precio Servicio</strong></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <InputNumber class="form-control" @bind-Value="PrecioServicio" readonly />
 
-
-					@* Precio Servicio *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Precio Servicio</strong></label>
-						<div class="input-group">
-							<span class="input-group-text">$</span>
-							<InputNumber class="form-control" @bind-Value="PrecioServicio" />
-
-						</div>
-					</div>
-
-					@* Precio Materiales *@
-					@* <div class="col-md-5">
-						<label class="form-label"><strong>Precio Materiales</strong></label>
-						<div class="input-group">
-							<span class="input-group-text">$</span>
-							<InputNumber TValue="double" class="form-control" Value="PrecioMateriales" ValueExpression="() => PrecioMateriales" readonly/>
-
-						</div>
-					</div> *@
-
-					@* Total *@
-					@* <div class="col-md-5">
-						<label class="form-label"><strong>Total Servicio</strong></label>
-						<div class="input-group">
-							<span class="input-group-text">$</span>
-							<InputNumber TValue="double" class="form-control" Value="Total" ValueExpression="() => Total" readonly/>
-						</div>
-					</div> *@
-					
-					
-
+                        </div>
+                    </div> 
+                    
 					@* Materiales *@
-					@* <div class="col-md-5">
-						<label class="form-label"><strong>Materiales</strong></label>
-						<InputSelect class="form-control" @bind-Value="material.MaterialId" @bind-Value:after="CambiodeMaterial">
-							<option value="0" selected disabled hidden>Seleccione un producto...</option>
-							@if (ListaProductos != null)
-							{
-								@foreach (var item in ListaProductos)
-								{
-									<option value="@item.MaterialId">@item.Nombre</option>
-								}
-							}
-						</InputSelect>
-						<ValidationMessage For="@(() => material.MaterialId)"/>
-					</div> *@
+					 <div class="col-md-5">
+						<label class="form-label"><strong>Material</strong></label>
+                        <InputSelect class="form-control" @bind-Value="material.MaterialId" @bind-Value:after="CambiodeMaterial">
+                            <option value="0" selected disabled hidden>Seleccione un producto...</option>
+                            @if (ListaProductos != null)
+                            {
+                                @foreach (var item in ListaProductos)
+                                {
+                                    <option value="@item.MaterialId">@item.Nombre</option>
+                                }
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => material.MaterialId)"/>
+                        <label class="form-label"><strong>Cantidad</strong></label>
+                        <InputNumber class="form-control" @bind-Value="Cantidad" @bind-Value:after="CambiodeMaterial" />
+                        
+                        @* Precio Materiales *@
+                        <label class="form-label"><strong>Precio Materiales</strong></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <InputNumber TValue="double" class="form-control" Value="PrecioMateriales" ValueExpression="() => PrecioMateriales" readonly/>
 
-				</div>
+                        </div>
+                     </div> 
+                    @* Fecha *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Fecha</strong></label>
+                        <InputDate @bind-Value="facturas.Fecha" class="form-control" readonly />
+                        <ValidationMessage For="@(() => facturas.Fecha)" />
+                    </div>
+                     
+                    @* Total *@
+                    <div class="col-md-5">
+                        <label class="form-label"><strong>Total Servicio</strong></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <InputNumber TValue="double" class="form-control" Value="Total" ValueExpression="() => Total" readonly/>
+                        </div>
+                    </div> 
+
+                </div>
 			</div>
 
 			@* footer *@
@@ -95,54 +118,101 @@
 
 @code
 {
-	private Materiales material = new();
-	private Facturas facturas = new();
-	private List<Materiales?> ListaProductos { get; set; } = new();
+    private Materiales material = new();
+    private Servicios servicio = new();
+    private Facturas facturas = new();
 
-	private double PrecioServicio { get; set; }
-	private double PrecioMateriales { get; set; }
-	private double Total => PrecioServicio + PrecioMateriales;
+    private List<Materiales?> ListaProductos { get; set; } = new();
+    private List<Servicios?> ListaServicios { get; set; } = new();
+
+    private double PrecioServicio { get; set; }
+    private double PrecioMateriales { get; set; }
+    private string CodigoGenerado { get; set; }
+    private double Total => PrecioMateriales + PrecioServicio;
+    private int Cantidad = 1;
+
 
 	protected override async Task OnInitializedAsync()
-	{
-		// ListaProductos = await materialService.Listar(p => p.MaterialId > 0);
+    {
+        
+        facturas.Fecha = DateTime.Today;
+        CodigoGenerado = $"FAC-{DateTime.Now:yyyy}-{Guid.NewGuid().ToString()[..6]}";
+        facturas.CodigoFactura = CodigoGenerado;
+        
+        
+        
+        ListaProductos = await materialService.Listar(p => p.MaterialId > 0);
+        ListaServicios = await servicioService.Listar(s => s.ServicioId > 0);
 	}
 
-	// private void CambiodeMaterial()
-	// {
+	 private void CambiodeMaterial()
+	 {
 
-	// 	var mat = ListaProductos.FirstOrDefault(x => x.MaterialId == material.MaterialId);
+		var mat = ListaProductos.FirstOrDefault(x => x.MaterialId == material.MaterialId);
 
-	// 	if (mat != null)
-	// 	{
-	// 		PrecioMateriales = mat.Precio;
-	// 	}
-	// 	else
-	// 	{
-	// 		PrecioMateriales = 0;
-	// 	}
-	// }
-
-	private async Task Guardar()
-	{
-		var factura = new Facturas()
-		{
-			Nombre = facturas.Nombre,
-			Fecha = facturas.Fecha,
-			// MaterialId = material.MaterialId,
-			MontoTotal = Total
-		};
-
-		var guardar = await facturaService.Guardar(facturas);
-
-		if (guardar)
-		{
-			toastService.ShowSuccess("La factura ha sido creado con exito");
-			navegar.NavigateTo("/Facturacion");
+		if (mat != null)
+	 	{
+	 		PrecioMateriales = mat.Precio * Cantidad;
 		}
-		else
-		{
-			toastService.ShowError("Error: no se pudo guardar la factura");
-		}
-	}
+	 	else
+	 	{
+	 		PrecioMateriales = 0;
+	 	}
+	 }
+     private void CambiodeServicio()
+     {
+
+         var serv = ListaServicios.FirstOrDefault(x => x.ServicioId == servicio.ServicioId);
+
+         if (serv != null)
+         {
+             PrecioServicio = serv.Precio;
+         }
+         else
+         {
+            PrecioServicio = 0;
+         }
+     }
+     
+
+     private async Task Guardar()
+     {
+
+         var mat = ListaProductos.FirstOrDefault(x => x.MaterialId == material.MaterialId);
+         if (servicio.ServicioId == 0)
+         {
+             toastService.ShowError("Debe seleccionar un servicio");
+             return;
+         }
+         
+         if (mat == null || mat.CantidadDisponible < Cantidad)
+         {
+             toastService.ShowError("Stock insuficiente");
+             return;
+         }
+
+         var factura = new Facturas()
+         {
+             CodigoFactura = facturas.CodigoFactura,
+             Nombre = facturas.Nombre,
+             Fecha = facturas.Fecha,
+             MontoTotal = Total,
+             EstadoFactura = EstadosFactura.Pendiente,
+
+             MaterialId = material.MaterialId,   
+             Cantidad = Cantidad                
+         };
+
+         var guardar = await facturaService.Guardar(factura);
+
+         if (guardar)
+         {
+             toastService.ShowSuccess("La factura ha sido creada con éxito");
+             navegar.NavigateTo("/Facturacion");
+         }
+         else
+         {
+             toastService.ShowError("Error: no se pudo guardar la factura");
+         }
+     }
 }

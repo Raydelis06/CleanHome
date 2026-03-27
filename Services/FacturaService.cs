@@ -29,8 +29,36 @@ namespace CleanHome.Services
         private async Task<bool> Insertar(Facturas factura)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            contexto.Facturas.Add(factura);
-            return await contexto.SaveChangesAsync() > 0;
+            await using var transaction = await contexto.Database.BeginTransactionAsync();
+
+            try
+            {
+                var material = await contexto.Materiales
+                    .FirstOrDefaultAsync(m => m.MaterialId == factura.MaterialId);
+
+                if (material == null)
+                    return false;
+
+                
+                if (material.CantidadDisponible < factura.Cantidad)
+                    return false;
+
+                
+                material.CantidadDisponible -= factura.Cantidad;
+
+                
+                contexto.Facturas.Add(factura);
+
+                await contexto.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
         }
 
         private async Task<bool> Modificar(Facturas factura)
