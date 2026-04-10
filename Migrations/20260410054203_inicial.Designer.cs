@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanHome.Migrations
 {
     [DbContext(typeof(Contexto))]
-    [Migration("20260324075623_Inicial")]
-    partial class Inicial
+    [Migration("20260410054203_inicial")]
+    partial class inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -134,6 +134,9 @@ namespace CleanHome.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaterialId"));
 
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
                     b.Property<int>("CantidadDisponible")
                         .HasColumnType("int");
 
@@ -157,6 +160,66 @@ namespace CleanHome.Migrations
                     b.HasKey("MaterialId");
 
                     b.ToTable("Materiales");
+                });
+
+            modelBuilder.Entity("CleanHome.Models.OrdenCompra", b =>
+                {
+                    b.Property<int>("OrdenCompraId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrdenCompraId"));
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EstadoOrden")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProveedorId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("OrdenCompraId");
+
+                    b.HasIndex("ProveedorId");
+
+                    b.ToTable("OrdenesCompra");
+                });
+
+            modelBuilder.Entity("CleanHome.Models.OrdenCompraDetalle", b =>
+                {
+                    b.Property<int>("OrdenCompraDetalleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrdenCompraDetalleId"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaterialId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrdenCompraId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Precio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("OrdenCompraDetalleId");
+
+                    b.HasIndex("MaterialId");
+
+                    b.HasIndex("OrdenCompraId");
+
+                    b.ToTable("OrdenesCompraDetalle");
                 });
 
             modelBuilder.Entity("CleanHome.Models.Propiedades", b =>
@@ -304,6 +367,41 @@ namespace CleanHome.Migrations
                             Descripcion = "Local Comercial",
                             Estado = 0
                         });
+                });
+
+            modelBuilder.Entity("CleanHome.Models.OrdenCompra", b =>
+                {
+                    b.HasOne("CleanHome.Models.Proveedores", "Proveedor")
+                        .WithMany()
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("CleanHome.Models.OrdenCompraDetalle", b =>
+                {
+                    b.HasOne("CleanHome.Models.Materiales", "Material")
+                        .WithMany()
+                        .HasForeignKey("MaterialId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CleanHome.Models.OrdenCompra", "OrdenCompra")
+                        .WithMany("Detalles")
+                        .HasForeignKey("OrdenCompraId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Material");
+
+                    b.Navigation("OrdenCompra");
+                });
+
+            modelBuilder.Entity("CleanHome.Models.OrdenCompra", b =>
+                {
+                    b.Navigation("Detalles");
                 });
 #pragma warning restore 612, 618
         }
