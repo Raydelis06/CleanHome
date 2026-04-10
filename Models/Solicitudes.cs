@@ -1,0 +1,24 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace CleanHome.Models
+{
+    public class SolicitudDTO
+    {
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "El cliente es obligatorio")]
+        [StringLength(100, ErrorMessage = "Máximo 100 caracteres")]
+        public string Cliente { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La descripción es obligatoria")]
+        [StringLength(300, ErrorMessage = "Máximo 300 caracteres")]
+        public string Descripcion { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La fecha es obligatoria")]
+        public DateTime Fecha { get; set; }
+
+        [Required(ErrorMessage = "El estado es obligatorio")]
+        public EstadoSolicitud Estado { get; set; }
+    }
+}

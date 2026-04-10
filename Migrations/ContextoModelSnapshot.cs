@@ -98,6 +98,9 @@ namespace CleanHome.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FacturaId"));
 
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
                     b.Property<string>("CodigoFactura")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -110,6 +113,9 @@ namespace CleanHome.Migrations
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("MaterialId")
+                        .HasColumnType("int");
 
                     b.Property<double>("MontoTotal")
                         .HasColumnType("float");

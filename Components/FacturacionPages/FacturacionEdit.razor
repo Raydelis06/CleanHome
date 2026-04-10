@@ -1,0 +1,290 @@
+﻿@page "/Facturacion/Editar/{Id:int}"
+@using CleanHome.Models
+@using CleanHome.Extensions
+@using CleanHome.Services
+@inject MaterialService materialService
+@inject ServicioService servicioService
+@inject FacturaService facturaService
+@inject NavigationManager navegar
+@inject ToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Editar Factura</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h5 class="card-title">Editar Factura</h5>
+        </div>
+
+        <EditForm Model="facturas" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card-body">
+                <div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
+
+                    @* Codigo *@
+                    <div class="col-md-5">
+                        <label><strong>Código</strong></label>
+                        <InputText class="form-control" @bind-Value="facturas.CodigoFactura" readonly />
+                    </div>
+
+                    @* Nombre *@
+                    <div class="col-md-5">
+                        <label><strong>Nombre</strong></label>
+                        <InputText class="form-control" @bind-Value="facturas.Nombre" />
+                        <ValidationMessage For="@(() => facturas.Nombre)" />
+                    </div>
+
+                    @* Servicio *@
+                    <div class="col-md-5">
+                        <label><strong>Servicio</strong></label>
+                        <InputSelect class="form-control" @bind-Value="servicio.ServicioId" @bind-Value:after="CambiodeServicio">
+                            <option value="0">Seleccione un servicio...</option>
+                            @foreach (var item in ListaServicios)
+                            {
+                                <option value="@item.ServicioId">@item.Nombre</option>
+                            }
+                        </InputSelect>
+
+                        <label><strong>Precio Servicio</strong></label>
+                        <InputNumber class="form-control" @bind-Value="PrecioServicio" readonly />
+                    </div>
+
+                    @* Material *@
+                    <div class="col-md-5">
+                        <label><strong>Material</strong></label>
+                        <InputSelect class="form-control" @bind-Value="material.MaterialId" @bind-Value:after="CambiodeMaterial">
+                            <option value="0">Seleccione un material...</option>
+                            @foreach (var item in ListaProductos)
+                            {
+                                <option value="@item.MaterialId">@item.Nombre</option>
+                            }
+                        </InputSelect>
+
+                        <label><strong>Cantidad</strong></label>
+                        <InputNumber class="form-control" @bind-Value="Cantidad" @bind-Value:after="CambiodeMaterial" />
+
+                        <label><strong>Precio Material</strong></label>
+                        <InputNumber class="form-control" @bind-Value="PrecioMateriales" readonly />
+                    </div>
+
+                    @* Fecha *@
+                    <div class="col-md-5">
+                        <label><strong>Fecha</strong></label>
+                        <InputDate class="form-control" @bind-Value="facturas.Fecha" />
+                    </div>
+
+                    @* Total *@
+                    <div class="col-md-5">
+                        <label><strong>Total</strong></label>
+                        <InputNumber class="form-control" Value="Total" ValueExpression="() => Total" readonly />
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-2">
+
+                <a href="/Facturacion" class="btn btn-secondary">
+                    Volver
+                </a>
+
+                @if (facturas.EstadoFactura == EstadosFactura.Pendiente)
+                {
+                    <button type="button" class="btn btn-success" @onclick="MarcarPagada">
+                        Marcar como pagada
+                    </button>
+
+                    <button type="button" class="btn btn-danger" @onclick="Eliminar">
+                        Eliminar
+                    </button>
+                }
+                else if (facturas.EstadoFactura == EstadosFactura.Pagada)
+                {
+                    <button type="button" class="btn btn-warning" @onclick="RevertirPago">
+                        Marcar como pendiente
+                    </button>
+
+                    <button type="button" class="btn btn-danger" @onclick="Eliminar">
+                        Eliminar
+                    </button>
+                }
+                else if (facturas.EstadoFactura == EstadosFactura.Cancelada)
+                {
+                    <button type="button" class="btn btn-success" @onclick="Recuperar">
+                        Recuperar
+                    </button>
+                }
+
+                <button type="submit" class="btn btn-primary">
+                    Guardar
+                </button>
+
+            </div>
+
+        </EditForm>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private Facturas facturas = new();
+    private Materiales material = new();
+    private Servicios servicio = new();
+
+    private List<Materiales?> ListaProductos = new();
+    private List<Servicios?> ListaServicios = new();
+
+    private double PrecioServicio;
+    private double PrecioMateriales;
+    private int Cantidad = 1;
+
+    private double Total => PrecioServicio + PrecioMateriales;
+
+    protected override async Task OnInitializedAsync()
+    {
+        facturas = await facturaService.Buscar(Id);
+
+        ListaProductos = await materialService.Listar(p => p.MaterialId > 0);
+        ListaServicios = await servicioService.Listar(s => s.ServicioId > 0);
+
+        if (facturas != null)
+        {
+            material.MaterialId = facturas.MaterialId;
+            Cantidad = facturas.Cantidad;
+
+            CambiodeMaterial();
+        }
+    }
+
+    private void CambiodeMaterial()
+    {
+        var mat = ListaProductos.FirstOrDefault(x => x.MaterialId == material.MaterialId);
+
+        if (mat != null)
+            PrecioMateriales = mat.Precio * Cantidad;
+        else
+            PrecioMateriales = 0;
+    }
+    private async Task MarcarPagada()
+    {
+        facturas.EstadoFactura = EstadosFactura.Pagada;
+
+        var resultado = await facturaService.Guardar(facturas);
+
+        if (resultado)
+        {
+            toastService.ShowSuccess("Factura pagada");
+            navegar.NavigateTo("/Facturacion");
+        }
+        else
+        {
+            toastService.ShowError("Error al actualizar estado");
+        }
+    }
+    async Task RevertirPago()
+    {
+        if (facturas != null)
+        {
+            facturas.EstadoFactura = EstadosFactura.Pendiente;
+
+            var resultado = await facturaService.Guardar(facturas);
+
+            if (resultado)
+            {
+                toastService.ShowSuccess("Factura marcada como pendiente");
+                navegar.NavigateTo("/Facturacion");
+            }
+            else
+            {
+                toastService.ShowError("Error al cambiar estado");
+            }
+        }
+    }
+
+    private void CambiodeServicio()
+    {
+        var serv = ListaServicios.FirstOrDefault(x => x.ServicioId == servicio.ServicioId);
+
+        if (serv != null)
+            PrecioServicio = serv.Precio;
+        else
+            PrecioServicio = 0;
+    }
+
+    private async Task Guardar()
+    {
+        if (servicio.ServicioId == 0)
+        {
+            toastService.ShowError("Debe seleccionar un servicio");
+            return;
+        }
+
+        var mat = ListaProductos.FirstOrDefault(x => x.MaterialId == material.MaterialId);
+
+        if (mat == null || mat.CantidadDisponible < Cantidad)
+        {
+            toastService.ShowError("Stock insuficiente");
+            return;
+        }
+
+        facturas.MaterialId = material.MaterialId;
+        facturas.Cantidad = Cantidad;
+        facturas.MontoTotal = Total;
+
+        var guardado = await facturaService.Guardar(facturas);
+
+        if (guardado)
+        {
+            toastService.ShowSuccess("Factura actualizada correctamente");
+            navegar.NavigateTo("/Facturacion");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo actualizar");
+        }
+    }
+    async Task Eliminar()
+    {
+        if (facturas != null)
+        {
+            facturas.EstadoFactura = EstadosFactura.Cancelada;
+            facturas.Estado = Estados.Inactivo;
+
+            var resultado = await facturaService.Guardar(facturas);
+
+            if (resultado)
+            {
+                toastService.ShowSuccess("La factura ha sido cancelada con éxito!");
+                navegar.NavigateTo("/Facturacion");
+            }
+            else
+            {
+                toastService.ShowError("Ha ocurrido un error al cancelar la factura");
+            }
+        }
+    }
+    async Task Recuperar()
+    {
+        if (facturas != null)
+        {
+            facturas.EstadoFactura = EstadosFactura.Pendiente;
+
+            var resultado = await facturaService.Guardar(facturas);
+
+            if (resultado)
+            {
+                toastService.ShowSuccess("La factura ha sido recuperada con éxito");
+                navegar.NavigateTo("/Facturacion");
+            }
+            else
+            {
+                toastService.ShowError("Ha ocurrido un error al recuperar la factura");
+            }
+        }
+    }
+}

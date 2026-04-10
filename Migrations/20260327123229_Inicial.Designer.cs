@@ -12,8 +12,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanHome.Migrations
 {
     [DbContext(typeof(Contexto))]
+<<<<<<<< HEAD:Migrations/20260410054203_inicial.Designer.cs
     [Migration("20260410054203_inicial")]
     partial class inicial
+========
+    [Migration("20260327123229_Inicial")]
+    partial class Inicial
+>>>>>>>> master:Migrations/20260327123229_Inicial.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -101,6 +106,9 @@ namespace CleanHome.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FacturaId"));
 
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
                     b.Property<string>("CodigoFactura")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -113,6 +121,9 @@ namespace CleanHome.Migrations
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("MaterialId")
+                        .HasColumnType("int");
 
                     b.Property<double>("MontoTotal")
                         .HasColumnType("float");

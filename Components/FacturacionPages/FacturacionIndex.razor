@@ -13,7 +13,7 @@
 	<div class="card shadow-lg">
 		<div class="card-header d-flex justify-content-between align-center ">
 			<h5 class="card-title">Registro de Facturas</h5>
-			<a href="/Facturas/Crear" class="btn btn-primary">
+			<a href="/Facturacion/Crear" class="btn btn-primary">
 				<span class="bi-plus-square mt-3"></span> Crear
 			</a>
 		</div>
@@ -32,7 +32,8 @@
 				<div class="row align-items-center">
 					<div class="col-6">
 						<InputSelect class="form-control" @bind-Value="Filtro">
-							<option value="" selected disabled hidden>Elija una opción</option>
+                            <option value="" selected disabled hidden>Elija una opción</option>
+                            <option value="">Todos</option>
 							<option value="Codigo">Codigo de Factura</option>
 							<option value="Nombre">Nombre</option>
 							<option value="Fecha">Fecha</option>
@@ -94,7 +95,7 @@
 								<td> @factura.EstadoFactura</td>
 							}
 							<td class="text-center">
-								<a href="@($"/Facturas/Editar_Factura/{factura.FacturaId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+								<a href="@($"/Facturacion/Editar/{factura.FacturaId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
 							</td>
 						</tr>
 					}
@@ -121,51 +122,53 @@
 		ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.FacturaId > 0);
 	}
 
-	private async Task Buscar()
-	{
-		if (Filtro != "")
-		{
-			if (Filtro == "Codigo")
-			{
-				ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.CodigoFactura.ToLower().Trim().Contains(ValorFiltro));
-			}
-			if (Filtro == "Nombre")
-			{
-				ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.Nombre.ToLower().Trim().Contains(ValorFiltro));
-			}
-			if (Filtro == "Fecha")
-			{
-				DateTime fechaFiltro;
-				if (DateTime.TryParse(ValorFiltro, out fechaFiltro))
-				{
-					ListaFacturas = await facturaService.Listar(a => 
-						a.Estado == Estados.Activo && 
-						a.Fecha.Date == fechaFiltro.Date);
-				}
-			}
-			if (Filtro == "FacturasEliminadas")
-			{
-				ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Inactivo);
-			}
-			if (Filtro == "Pagada")
-			{
-				ListaFacturas = await facturaService.Listar(a =>
-					a.Estado == Estados.Activo &&
-					a.EstadoFactura == EstadosFactura.Pagada);
-			}
+    private async Task Buscar()
+    {
+        if (string.IsNullOrWhiteSpace(Filtro))
+        {
+            ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.FacturaId > 0);
+            return;
+        }
 
-			if (Filtro == "Pendiente")
-			{
-				ListaFacturas = await facturaService.Listar(a =>
-					a.Estado == Estados.Activo &&
-					a.EstadoFactura == EstadosFactura.Pendiente);
-			}
-		}
-		else
-		{
-			ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.FacturaId > 0);
-		}
-		Filtro = string.Empty;
-		ValorFiltro = string.Empty;
-	}
+        switch (Filtro)
+        {
+            case "Codigo":
+                ListaFacturas = await facturaService.Listar(a =>
+                    a.Estado == Estados.Activo &&
+                    a.CodigoFactura.ToLower().Contains(ValorFiltro.ToLower()));
+                break;
+
+            case "Nombre":
+                ListaFacturas = await facturaService.Listar(a =>
+                    a.Estado == Estados.Activo &&
+                    a.Nombre.ToLower().Contains(ValorFiltro.ToLower()));
+                break;
+
+            case "Fecha":
+                if (FechaFiltro != null)
+                {
+                    ListaFacturas = await facturaService.Listar(a =>
+                        a.Estado == Estados.Activo &&
+                        a.Fecha.Date == FechaFiltro.Value.Date);
+                }
+                break;
+
+            case "Pagada":
+                ListaFacturas = await facturaService.Listar(a =>
+                    a.Estado == Estados.Activo &&
+                    a.EstadoFactura == EstadosFactura.Pagada);
+                break;
+
+            case "Pendiente":
+                ListaFacturas = await facturaService.Listar(a =>
+                    a.Estado == Estados.Activo &&
+                    a.EstadoFactura == EstadosFactura.Pendiente);
+                break;
+
+            case "FacturasEliminadas":
+                ListaFacturas = await facturaService.Listar(a =>
+                    a.Estado == Estados.Inactivo);
+                break;
+        }
+    }
 }

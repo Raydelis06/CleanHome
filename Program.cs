@@ -22,6 +22,7 @@ builder.Services.AddScoped<ServicioService>();
 builder.Services.AddScoped<PropiedadService>();
 builder.Services.AddScoped<TiposPropiedadService>();
 builder.Services.AddScoped<FacturaService>();
+builder.Services.AddScoped<SolicitudService>();
 
 //Inyecta bootstrap
 builder.Services.AddBlazorBootstrap();
