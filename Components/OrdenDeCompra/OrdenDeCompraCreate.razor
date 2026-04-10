@@ -1,90 +1,296 @@
-﻿@using CleanHome.Extensions
+﻿@page "/OrdenesCompra/Crear_Orden"
+@rendermode InteractiveServer
+
+@using CleanHome.Extensions
 @using CleanHome.Models
 @using CleanHome.Services
+
 @inject OrdenCompraService ordenService
 @inject ProveedorService proveedorService
+@inject MaterialService materialService
 @inject NavigationManager navegar
 @inject ToastService toastService
 
-@page "/OrdenesCompra/Crear_Orden"
-@rendermode InteractiveServer
-
 <PageTitle>Crear Orden de Compra</PageTitle>
 
-<EditForm Model="orden" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="container">
+    <div class="card shadow-lg">
 
-    <div class="container">
-        <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h5 class="card-title mb-0">Crear Orden de Compra</h5>
+        </div>
 
-            <div class="card-header text-center">
-                <h5 class="card-title">Crear Orden de Compra</h5>
-            </div>
+        <div class="card-body">
+            
+            <!-- ========== INFORMACIÓN GENERAL (Dentro del EditForm) ========== -->
+            <EditForm Model="orden" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
 
-            <div class="card-body">
-                <div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
-
-                    <div class="col-md-5">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
                         <label class="form-label"><strong>Proveedor</strong></label>
                         <InputSelect class="form-control" @bind-Value="orden.ProveedorId">
-                            <option value="0" disabled selected>Seleccione</option>
+                            <option value="0" disabled>Seleccione un proveedor</option>
                             @foreach (var proveedor in ListaProveedores)
                             {
-                                <option value="@proveedor.ProveedorId">
-                                    @proveedor.Nombre
-                                </option>
+                                <option value="@proveedor.ProveedorId">@proveedor.Nombre</option>
                             }
                         </InputSelect>
+                        <ValidationMessage For="@(() => orden.ProveedorId)" />
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <label class="form-label"><strong>Fecha</strong></label>
-                        <InputDate class="form-control" @bind-Value="orden.Fecha"></InputDate>
+                        <InputDate class="form-control" @bind-Value="orden.Fecha" />
+                        <ValidationMessage For="@(() => orden.Fecha)" />
+                    </div>
+                </div>
+
+                <hr />
+
+                <!-- ========== SECCIÓN AGREGAR DETALLE (FUERA de validación) ========== -->
+                <h6 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Material</h6>
+
+                <div class="row g-3 mb-3 align-items-end">
+                    <!-- Material -->
+                    <div class="col-md-4">
+                        <label class="form-label">Material</label>
+                        <select class="form-control" value="@materialSeleccionadoId"
+                                @onchange="OnMaterialSeleccionado">
+                            <option value="0" disabled selected>Seleccione</option>
+                            @foreach (var material in ListaMateriales)
+                            {
+                                <option value="@material.MaterialId">
+                                    @material.Nombre - Stock: @material.CantidadDisponible
+                                </option>
+                            }
+                        </select>
                     </div>
 
+                    <!-- Cantidad (sin validación de DataAnnotations) -->
+                    <div class="col-md-2">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" @bind="cantidadTemp" min="1" />
+                    </div>
+
+                    <!-- Precio (sin validación de DataAnnotations) -->
+                    <div class="col-md-3">
+                        <label class="form-label">Precio Unitario</label>
+                        <input type="number" class="form-control " readonly @bind="precioTemp" min="0.01" step="0.01" />
+                        @if (materialSeleccionado != null)
+                        {
+                            <small class="text-muted">
+                                Precio sugerido: @materialSeleccionado.Precio.ToString("C2")
+                            </small>
+                        }
+                    </div>
+
+                    <!-- Botón Agregar (type="button" para no hacer submit) -->
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-success w-100" @onclick="AgregarDetalle">
+                            <i class="bi bi-plus"></i> Agregar
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- FOOTER -->
-            <div class="card-footer text-center mt-3 d-flex justify-content-center">
-                <div class="d-flex justify-content-between gap-2">
+                @if (!string.IsNullOrEmpty(mensajeError))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @mensajeError
+                        <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
+                    </div>
+                }
+
+                <!-- ========== TABLA DE DETALLES ========== -->
+                <h6 class="mb-3"><i class="bi bi-list-ul"></i> Detalles de la Orden</h6>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Material</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unit.</th>
+                                <th>Importe</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (orden.Detalles.Any())
+                            {
+                                @foreach (var (detalle, index) in orden.Detalles.Select((d, i) => (d, i)))
+                                {
+                                    <tr>
+                                        <td>@(index + 1)</td>
+                                        <td>@ObtenerNombreMaterial(detalle.MaterialId)</td>
+                                        <td>@detalle.Cantidad</td>
+                                        <td>@detalle.Precio.ToString("C2")</td>
+                                        <td>@((detalle.Cantidad * detalle.Precio).ToString("C2"))</td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    @onclick="() => EliminarDetalle(index)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        No hay materiales agregados
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-primary">
+                                <td colspan="4" class="text-end"><strong>TOTAL:</strong></td>
+                                <td colspan="2"><strong>@CalcularTotal().ToString("C2")</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- ========== BOTONES ========== -->
+                <div class="d-flex justify-content-center gap-2 mt-4">
                     <a href="/OrdenesCompra" class="btn btn-secondary">
-                        <span class="bi bi-arrow-left"></span> Volver
+                        <i class="bi bi-arrow-left"></i> Volver
                     </a>
-
-                    <button type="submit" class="btn btn-primary bi bi-floppy">
-                        Guardar
+                    <button type="submit" class="btn btn-primary" disabled="@(!orden.Detalles.Any())">
+                        <i class="bi bi-floppy"></i> Guardar Orden
                     </button>
                 </div>
-            </div>
+            </EditForm>
 
         </div>
     </div>
-</EditForm>
+</div>
 
 @code {
-
     private OrdenCompra orden = new();
     private List<Proveedores> ListaProveedores = new();
+    private List<Materiales> ListaMateriales = new();
+    private string mensajeError = string.Empty;
+
+    // Variables temporales para agregar detalle (SIN DataAnnotations)
+    private int materialSeleccionadoId = 0;
+    private Materiales? materialSeleccionado = null;
+    private int cantidadTemp = 1;
+    private decimal precioTemp = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        ListaProveedores = await proveedorService.Listar(p => true);
+        ListaProveedores = await proveedorService.Listar(p => p.Estado == Estados.Activo);
+        ListaMateriales = await materialService.Listar(m => m.Estado == Estados.Activo);
         orden.Fecha = DateTime.Now;
+    }
+
+    private void OnMaterialSeleccionado(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            materialSeleccionadoId = id;
+            materialSeleccionado = ListaMateriales.FirstOrDefault(m => m.MaterialId == id);
+
+            if (materialSeleccionado != null)
+            {
+                precioTemp = (decimal)materialSeleccionado.Precio;
+            }
+        }
+    }
+
+    private void AgregarDetalle()
+    {
+        mensajeError = string.Empty;
+
+        // Validaciones manuales
+        if (materialSeleccionadoId <= 0)
+        {
+            mensajeError = "Debe seleccionar un material";
+            return;
+        }
+
+        if (cantidadTemp <= 0)
+        {
+            mensajeError = "La cantidad debe ser mayor a 0";
+            return;
+        }
+
+        if (precioTemp <= 0)
+        {
+            mensajeError = "El precio debe ser mayor a 0";
+            return;
+        }
+
+        // Verificar si ya existe el material
+        if (orden.Detalles.Any(d => d.MaterialId == materialSeleccionadoId))
+        {
+            mensajeError = "Este material ya fue agregado a la orden";
+            return;
+        }
+
+        // Agregar el detalle
+        orden.Detalles.Add(new OrdenCompraDetalle
+        {
+            MaterialId = materialSeleccionadoId,
+            Cantidad = cantidadTemp,
+            Precio = precioTemp
+        });
+
+        // Limpiar campos temporales
+        materialSeleccionadoId = 0;
+        materialSeleccionado = null;
+        cantidadTemp = 1;
+        precioTemp = 0;
+    }
+
+    private void EliminarDetalle(int index)
+    {
+        if (index >= 0 && index < orden.Detalles.Count)
+        {
+            orden.Detalles.RemoveAt(index);
+        }
+    }
+
+    private decimal CalcularTotal()
+    {
+        return orden.Detalles.Sum(d => d.Cantidad * d.Precio);
+    }
+
+    private string ObtenerNombreMaterial(int materialId)
+    {
+        return ListaMateriales.FirstOrDefault(m => m.MaterialId == materialId)?.Nombre ?? "N/A";
     }
 
     private async Task Guardar()
     {
-        var guardar = await ordenService.Guardar(orden);
-
-        if (guardar)
+        if (orden.ProveedorId <= 0)
         {
-            toastService.ShowSuccess("La orden ha sido creada con éxito!");
+            toastService.ShowError("Debe seleccionar un proveedor");
+            return;
+        }
+
+        if (!orden.Detalles.Any())
+        {
+            toastService.ShowError("Debe agregar al menos un material");
+            return;
+        }
+
+        orden.Total = CalcularTotal();
+
+        var resultado = await ordenService.Guardar(orden);
+
+        if (resultado)
+        {
+            toastService.ShowSuccess("Orden de compra creada exitosamente");
             navegar.NavigateTo("/OrdenesCompra");
         }
         else
         {
-            toastService.ShowError("Error al crear la orden");
+            toastService.ShowError("Error al crear la orden de compra");
         }
     }
 }

@@ -1,85 +1,147 @@
-﻿@using CleanHome.Models
+﻿@page "/OrdenesCompra/Detalle/{OrdenCompraId:int}"
+@rendermode InteractiveServer
+
+@using CleanHome.Models
 @using CleanHome.Services
+@using CleanHome.Extensions
+
 @inject OrdenCompraService ordenService
 @inject NavigationManager navegar
-
-@page "/OrdenesCompra/Detalle/{OrdenCompraId:int}"
-@rendermode InteractiveServer
+@inject ToastService toastService
 
 <PageTitle>Detalle de Orden</PageTitle>
 
 <div class="container">
     <div class="card shadow-lg">
 
-        <!-- HEADER -->
-        <div class="card-header text-center">
-            <h5 class="card-title">Detalle de Orden de Compra</h5>
+        <div class="card-header text-center bg-primary text-white">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-file-text"></i> Detalle de Orden de Compra #@OrdenCompraId
+            </h5>
         </div>
 
-        <!-- BODY -->
         <div class="card-body">
-
             @if (orden == null)
             {
-                <p>Cargando...</p>
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Cargando información...</p>
+                </div>
             }
             else
             {
                 <!-- INFO GENERAL -->
-                <div class="row mb-4">
+                <div class="row mb-4 g-3">
                     <div class="col-md-4">
-                        <strong>Proveedor:</strong> @orden.Proveedor?.Nombre
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Proveedor</h6>
+                                <p class="mb-0 fw-bold">@orden.Proveedor?.Nombre</p>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-4">
-                        <strong>Fecha:</strong> @orden.Fecha.ToShortDateString()
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Fecha</h6>
+                                <p class="mb-0 fw-bold">@orden.Fecha.ToShortDateString()</p>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-4">
-                        <strong>Estado:</strong> @orden.Estado
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Estado</h6>
+                                <span class="badge @GetBadgeClass(orden.EstadoOrden) fs-6">
+                                    @orden.EstadoOrden
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- TABLA DETALLES -->
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Material</th>
-                            <th>Cantidad</th>
-                            <th>Precio</th>
-                            <th>Importe</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in orden.Detalles)
-                        {
-                            <tr>
-                                <td>@item.Material?.Nombre</td>
-                                <td>@item.Cantidad</td>
-                                <td>@item.Precio</td>
-                                <td>@(item.Cantidad* item.Precio)</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                <h6 class="mb-3"><i class="bi bi-list-check"></i> Materiales de la Orden</h6>
 
-                <!-- TOTAL -->
-                <div class="text-end mt-3">
-                    <h5><strong>Total: @orden.Total</strong></h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Material</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Precio Unit.</th>
+                                <th class="text-end">Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var (item, index) in orden.Detalles.Select((d, i) => (d, i)))
+                            {
+                                <tr>
+                                    <td>@(index + 1)</td>
+                                    <td>@item.Material?.Nombre</td>
+                                    <td class="text-center">@item.Cantidad</td>
+                                    <td class="text-end">@item.Precio.ToString("C2")</td>
+                                    <td class="text-end">@((item.Cantidad * item.Precio).ToString("C2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-success">
+                                <td colspan="4" class="text-end"><strong>TOTAL:</strong></td>
+                                <td class="text-end"><strong>@orden.Total.ToString("C2")</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             }
-
         </div>
 
         <!-- FOOTER -->
-        <div class="card-footer text-center d-flex justify-content-center">
-            <div class="d-flex gap-2">
-
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
                 <a href="/OrdenesCompra" class="btn btn-secondary">
-                    <span class="bi bi-arrow-left"></span> Volver
+                    <i class="bi bi-arrow-left"></i> Volver
                 </a>
 
+                <div class="d-flex gap-2">
+                    @if (orden?.EstadoOrden == "Pendiente")
+                    {
+                        <button class="btn btn-success" @onclick="Confirmar" disabled="@procesando">
+                            @if (procesando)
+                            {
+                                <span class="spinner-border spinner-border-sm"></span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-check-circle"></i>
+                            }
+                            Confirmar Orden
+                        </button>
+
+                        <button class="btn btn-danger" @onclick="Cancelar" disabled="@procesando">
+                            <i class="bi bi-x-circle"></i> Cancelar Orden
+                        </button>
+                    }
+
+                    @if (orden?.EstadoOrden == "Confirmada")
+                    {
+                        <span class="text-success fw-bold d-flex align-items-center">
+                            <i class="bi bi-check2-circle me-1"></i> Orden confirmada - Stock actualizado
+                        </span>
+                    }
+
+                    @if (orden?.EstadoOrden == "Cancelada")
+                    {
+                        <span class="text-danger fw-bold d-flex align-items-center">
+                            <i class="bi bi-x-circle me-1"></i> Orden cancelada
+                        </span>
+                    }
+                </div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -88,19 +150,70 @@
     public int OrdenCompraId { get; set; }
 
     private OrdenCompra? orden;
+    private bool procesando = false;
 
     protected override async Task OnInitializedAsync()
+    {
+        await CargarOrden();
+    }
+
+    private async Task CargarOrden()
     {
         orden = await ordenService.Buscar(OrdenCompraId);
     }
 
     private async Task Confirmar()
     {
-        var confirmado = await ordenService.Confirmar(OrdenCompraId);
-
-        if (confirmado)
+        if (orden != null)
         {
-            orden = await ordenService.Buscar(OrdenCompraId);
+            procesando = true;
+
+            var resultado = await ordenService.Confirmar(orden);
+
+            if (resultado)
+            {
+                toastService.ShowSuccess("Orden confirmada. El stock ha sido actualizado.");
+                await CargarOrden();
+            }
+            else
+            {
+                toastService.ShowError("Error al confirmar la orden");
+            }
+
+            procesando = false;
         }
+    }
+
+    private async Task Cancelar()
+    {
+        if (orden != null)
+        {
+            procesando = true;
+
+            var resultado = await ordenService.Cancelar(orden);
+
+            if (resultado)
+            {
+                toastService.ShowSuccess("Orden cancelada");
+                await CargarOrden();
+            }
+            else
+            {
+                toastService.ShowError("Error al cancelar la orden");
+            }
+
+            procesando = false;
+        }
+    }
+
+    private string GetBadgeClass(string estado)
+    {
+        return estado switch
+        {
+            "Pendiente" => "bg-warning text-dark",
+            "Confirmada" => "bg-success",
+            "Cancelada" => "bg-danger",
+            _ => "bg-secondary"
+        };
     }
 }

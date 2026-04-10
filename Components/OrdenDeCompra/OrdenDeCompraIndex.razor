@@ -1,115 +1,251 @@
-﻿@using CleanHome.Models
+﻿@page "/OrdenesCompra"
+@rendermode InteractiveServer
+
+@using CleanHome.Models
 @using CleanHome.Services
-@inject OrdenCompraService ordenService;
+@using CleanHome.Extensions
 
-@page "/OrdenesCompra"
+@inject OrdenCompraService ordenService
+@inject ToastService toastService
 
-<PageTitle>Registro de Ordenes de Compra</PageTitle>
+<PageTitle>Registro de Órdenes de Compra</PageTitle>
 
 <div class="container">
     <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between align-center ">
-            <h5 class="card-title">Registro de Ordenes de Compra</h5>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Registro de Órdenes de Compra</h5>
             <a href="/OrdenesCompra/Crear_Orden" class="btn btn-primary">
-                <span class="bi-plus-square"></span> Crear
+                <span class="bi bi-plus-square"></span> Crear
             </a>
         </div>
 
         <div class="card-body">
-
+            <!-- FILTROS -->
             <div class="mb-4">
-                <div class="row">
-                    <div class="col-6">
-                        <label class="col-form-label"><strong>Filtro</strong></label>
-                    </div>
-                    <div class="col-6">
-                        <label class="col-form-label"><strong>Búsqueda</strong></label>
-                    </div>
-                </div>
-
-                <div class="row align-items-center">
-                    <div class="col-6">
-                        <InputSelect class="form-control" @bind-Value="Filtro">
-                            <option value="" selected disabled hidden>Elija una opción</option>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label"><strong>Filtro</strong></label>
+                        <select class="form-control" @bind="Filtro">
+                            <option value="" disabled selected>Elija una opción</option>
                             <option value="Proveedor">Proveedor</option>
                             <option value="Estado">Estado</option>
-                        </InputSelect>
+                        </select>
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-md-4">
+                        <label class="form-label"><strong>Búsqueda</strong></label>
                         <div class="input-group">
                             <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
-                            <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                            <button type="button" class="btn btn-outline-primary" @onclick="Buscar">
+                                <i class="bi bi-search"></i>
+                            </button>
                         </div>
+                    </div>
+
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-secondary" @onclick="LimpiarFiltros">
+                            <i class="bi bi-x-circle"></i> Limpiar
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <table class="table table-hover table-responsive">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Proveedor</th>
-                        <th>Total</th>
-                        <th>Estado</th>
-                        <th>Opciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var orden in ListaOrdenes)
-                    {
+            <!-- TABLA -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
                         <tr>
-                            <td>@orden.Fecha.ToShortDateString()</td>
-                            <td>@orden.Proveedor?.Nombre</td>
-                            <td>@orden.Total</td>
-
-                            <td class="text-center">
-                                <a href="@($"/OrdenesCompra/Detalle/{orden.OrdenCompraId}")">
-                                   class="btn btn-outline-info bi bi-eye"></a>
-
-                                <a href="@($"/OrdenesCompra/Editar/{orden.OrdenCompraId}")"
-                                   class="btn btn-outline-primary bi bi-pencil-square"></a>
-                            </td>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Proveedor</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th class="text-center">Opciones</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @if (ListaOrdenes.Any())
+                        {
+                            @foreach (var orden in ListaOrdenes)
+                            {
+                                <tr>
+                                    <td>@orden.OrdenCompraId</td>
+                                    <td>@orden.Fecha.ToShortDateString()</td>
+                                    <td>@orden.Proveedor?.Nombre</td>
+                                    <td>@orden.Total.ToString("C2")</td>
+                                    <td>
+                                        <span class="badge @GetBadgeClass(orden.EstadoOrden)">
+                                            @orden.EstadoOrden
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <!-- Ver Detalle -->
+                                        <a href="/OrdenesCompra/Detalle/@orden.OrdenCompraId"
+                                               class="btn btn-outline-info btn-sm" title="Ver detalle">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
 
-            <div class="card-footer">
-                <label>Cantidad: @ListaOrdenes.Count()</label>
+                                        <!-- Editar -->
+                                        <a href="/OrdenesCompra/Editar/@orden.OrdenCompraId"
+                                               class="btn btn-outline-primary btn-sm" title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        <!-- Eliminar (deshabilitado si está Confirmada) -->
+                                        @if (orden.EstadoOrden == "Confirmada")
+                                        {
+                                            <button class="btn btn-outline-secondary btn-sm"
+                                                    title="No se puede eliminar una orden confirmada"
+                                                    disabled>
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-outline-danger btn-sm"
+                                                    title="Eliminar"
+                                                    @onclick="() => ConfirmarEliminar(orden)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    No hay órdenes registradas
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
+        </div>
 
+        <div class="card-footer">
+            <span class="text-muted">Total de registros: <strong>@ListaOrdenes.Count</strong></span>
         </div>
     </div>
 </div>
 
+<!-- MODAL DE CONFIRMACIÓN -->
+@if (mostrarModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro que desea eliminar la orden <strong>#@ordenAEliminar?.OrdenCompraId</strong>?</p>
+                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" @onclick="EliminarOrden">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
-    public List<OrdenCompra> ListaOrdenes { get; set; } = new();
-    public string Filtro { get; set; } = string.Empty;
-    public string ValorFiltro { get; set; } = string.Empty;
+    private List<OrdenCompra> ListaOrdenes = new();
+    private string Filtro = string.Empty;
+    private string ValorFiltro = string.Empty;
+
+    // Modal
+    private bool mostrarModal = false;
+    private OrdenCompra? ordenAEliminar = null;
 
     protected override async Task OnInitializedAsync()
     {
-        ListaOrdenes = await ordenService.Listar(o => o.OrdenCompraId > 0);
+        await CargarOrdenes();
     }
 
-    public async Task Buscar()
+    private async Task CargarOrdenes()
     {
-        if (Filtro != "")
-        {
-            if (Filtro == "Proveedor")
-            {
-                ListaOrdenes = await ordenService.Listar(
-                    o => o.Proveedor!.Nombre.ToLower().Contains(ValorFiltro.ToLower()));
-            }
+        ListaOrdenes = await ordenService.Listar(o => true);
+    }
 
-        }
-        else
+    private async Task Buscar()
+    {
+        if (string.IsNullOrEmpty(Filtro) || string.IsNullOrEmpty(ValorFiltro))
         {
-            ListaOrdenes = await ordenService.Listar(o => o.OrdenCompraId > 0);
+            await CargarOrdenes();
+            return;
         }
 
+        ListaOrdenes = Filtro switch
+        {
+            "Proveedor" => await ordenService.Listar(
+                o => o.Proveedor!.Nombre.ToLower().Contains(ValorFiltro.ToLower())),
+
+            "Estado" => await ordenService.Listar(
+                o => o.EstadoOrden.ToLower().Contains(ValorFiltro.ToLower())),
+
+            _ => await ordenService.Listar(o => true)
+        };
+    }
+
+    private async Task LimpiarFiltros()
+    {
         Filtro = string.Empty;
         ValorFiltro = string.Empty;
+        await CargarOrdenes();
+    }
+
+    private void ConfirmarEliminar(OrdenCompra orden)
+    {
+        ordenAEliminar = orden;
+        mostrarModal = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+        ordenAEliminar = null;
+    }
+
+    private async Task EliminarOrden()
+    {
+        if (ordenAEliminar != null)
+        {
+            var resultado = await ordenService.Eliminar(ordenAEliminar);
+
+            if (resultado)
+            {
+                toastService.ShowSuccess("Orden eliminada con éxito!");
+                await CargarOrdenes();
+            }
+            else
+            {
+                toastService.ShowError("No se puede eliminar esta orden");
+            }
+
+            CerrarModal();
+        }
+    }
+
+    private string GetBadgeClass(string estado)
+    {
+        return estado switch
+        {
+            "Pendiente" => "bg-warning text-dark",
+            "Confirmada" => "bg-success",
+            "Cancelada" => "bg-danger",
+            _ => "bg-secondary"
+        };
     }
 }
