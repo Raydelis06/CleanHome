@@ -18,6 +18,8 @@ namespace CleanHome.DAL
         public DbSet<Propiedades> Propiedades { get; set; }
         public DbSet<TiposPropiedad> TiposPropiedad { get; set; }
         public DbSet<Facturas> Facturas { get; set; }
+        public DbSet<FacturaDetalle> FacturaDetalles { get; set; }
+        public DbSet<FacturaServicio> FacturaServicios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

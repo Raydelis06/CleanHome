@@ -12,13 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CleanHome.Migrations
 {
     [DbContext(typeof(Contexto))]
-<<<<<<<< HEAD:Migrations/20260410054203_inicial.Designer.cs
     [Migration("20260410054203_inicial")]
     partial class inicial
-========
-    [Migration("20260327123229_Inicial")]
-    partial class Inicial
->>>>>>>> master:Migrations/20260327123229_Inicial.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
