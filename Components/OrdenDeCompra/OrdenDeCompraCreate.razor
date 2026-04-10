@@ -282,15 +282,20 @@
         orden.Total = CalcularTotal();
 
         var resultado = await ordenService.Guardar(orden);
+        try{
+            if (resultado)
+            {
+                toastService.ShowSuccess("Orden de compra creada exitosamente");
+                navegar.NavigateTo("/OrdenesCompra");
+            }
+            else
+            {
+                toastService.ShowError("Error al crear la orden de compra");
+            }
+        }catch(Exception e)
+        {
+            toastService.ShowError(e.Message);
+        }
 
-        if (resultado)
-        {
-            toastService.ShowSuccess("Orden de compra creada exitosamente");
-            navegar.NavigateTo("/OrdenesCompra");
-        }
-        else
-        {
-            toastService.ShowError("Error al crear la orden de compra");
-        }
     }
 }

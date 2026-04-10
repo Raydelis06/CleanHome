@@ -40,12 +40,7 @@ public class OrdenCompraService(IDbContextFactory<Contexto> DbFactory)
 
             if (material != null)
             {
-                // Verificar que hay suficiente stock
-                if (material.CantidadDisponible < item.Cantidad)
-                {
-                    return false; // No hay suficiente stock
-                }
-                material.CantidadDisponible -= item.Cantidad;
+                material.CantidadDisponible += item.Cantidad;
             }
         }
 
