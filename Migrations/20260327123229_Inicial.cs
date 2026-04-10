@@ -59,7 +59,9 @@ namespace CleanHome.Migrations
                     Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MontoTotal = table.Column<double>(type: "float", nullable: false),
                     EstadoFactura = table.Column<int>(type: "int", nullable: false),
-                    Estado = table.Column<int>(type: "int", nullable: false)
+                    Estado = table.Column<int>(type: "int", nullable: false),
+                    MaterialId = table.Column<int>(type: "int", nullable: false),
+                    Cantidad = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
