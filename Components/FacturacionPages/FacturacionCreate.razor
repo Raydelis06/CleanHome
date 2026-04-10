@@ -1,218 +1,418 @@
-﻿@page "/Facturacion/Crear"
-@using CleanHome.Models
-@using CleanHome.Extensions
-@using CleanHome.Services
-@inject MaterialService materialService
-@inject NavigationManager navegar
-@inject ToastService toastService
-@inject FacturaService facturaService
-@inject ServicioService servicioService
+@page "/Facturacion/Crear"
 @rendermode InteractiveServer
 
-<PageTitle>Crear factura</PageTitle>
+@using CleanHome.Extensions
+@using CleanHome.Models
+@using CleanHome.Services
 
-<EditForm Model="facturas" OnValidSubmit="Guardar">
-	<DataAnnotationsValidator />
-	<div class="container">
-		<div class="card shadow-lg">
-			<div class="card-header text-center">
-				<h5 class="card-title">Crear Factura</h5>
-			</div>
+@inject FacturaService facturaService
+@inject MaterialService materialService
+@inject ServicioService servicioService
+@inject NavigationManager navegar
+@inject ToastService toastService
 
-			<div class="card-body">
-				<div class="row gx-2 g-5 mt-1 mb-1 justify-content-center">
-                    
-                    @* Codigo Factura *@
-                    <div class="col-md-5">
-                        <label class="form-label"><strong>Codigo</strong></label>
-                        <InputText class="form-control" @bind-Value="facturas.CodigoFactura" readonly />
+<PageTitle>Crear Factura</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+
+        <div class="card-header text-center">
+            <h5 class="card-title mb-0">Crear Factura</h5>
+        </div>
+
+        <div class="card-body">
+
+            <EditForm Model="factura" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label"><strong>Código Factura</strong></label>
+                        <InputText class="form-control" @bind-Value="factura.CodigoFactura" readonly />
                     </div>
 
-                    @* Nombre *@
-					<div class="col-md-5">
-						<label class="form-label"><strong>Nombre</strong></label>
-						<InputText class="form-control" @bind-Value="facturas.Nombre" />
-						<ValidationMessage For="@(() => facturas.Nombre)" />
-					</div>
-                    @* Servicios *@
-                    <div class="col-md-5">
-                        <label class="form-label"><strong>Servicios</strong></label>
-                        <InputSelect class="form-control" @bind-Value="servicio.ServicioId" @bind-Value:after="CambiodeServicio">
-                            <option value="0" selected disabled hidden>Seleccione un servicio...</option>
-                            @if (ListaServicios != null)
-                            {
-                                @foreach (var item in ListaServicios)
-                                {
-                                    <option value="@item.ServicioId">@item.Nombre</option>
-                                }
-                            }
-                        </InputSelect>
-                        <ValidationMessage For="@(() => servicio.ServicioId)"/>
-                         
-                        @* Precio Servicio *@
-                        <label class="form-label"><strong>Precio Servicio</strong></label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <InputNumber class="form-control" @bind-Value="PrecioServicio" readonly />
+                    <div class="col-md-6">
+                        <label class="form-label"><strong>Nombre</strong></label>
+                        <InputText class="form-control" @bind-Value="factura.Nombre" />
+                        <ValidationMessage For="@(() => factura.Nombre)" />
+                    </div>
 
-                        </div>
-                    </div> 
-                    
-					@* Materiales *@
-					 <div class="col-md-5">
-						<label class="form-label"><strong>Material</strong></label>
-                        <InputSelect class="form-control" @bind-Value="material.MaterialId" @bind-Value:after="CambiodeMaterial">
-                            <option value="0" selected disabled hidden>Seleccione un producto...</option>
-                            @if (ListaProductos != null)
-                            {
-                                @foreach (var item in ListaProductos)
-                                {
-                                    <option value="@item.MaterialId">@item.Nombre</option>
-                                }
-                            }
-                        </InputSelect>
-                        <ValidationMessage For="@(() => material.MaterialId)"/>
-                        <label class="form-label"><strong>Cantidad</strong></label>
-                        <InputNumber class="form-control" @bind-Value="Cantidad" @bind-Value:after="CambiodeMaterial" />
-                        
-                        @* Precio Materiales *@
-                        <label class="form-label"><strong>Precio Materiales</strong></label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <InputNumber TValue="double" class="form-control" Value="PrecioMateriales" ValueExpression="() => PrecioMateriales" readonly/>
-
-                        </div>
-                     </div> 
-                    @* Fecha *@
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <label class="form-label"><strong>Fecha</strong></label>
-                        <InputDate @bind-Value="facturas.Fecha" class="form-control" readonly />
-                        <ValidationMessage For="@(() => facturas.Fecha)" />
+                        <InputDate class="form-control" @bind-Value="factura.Fecha" />
+                        <ValidationMessage For="@(() => factura.Fecha)" />
                     </div>
-                     
-                    @* Total *@
-                    <div class="col-md-5">
-                        <label class="form-label"><strong>Total Servicio</strong></label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <InputNumber TValue="double" class="form-control" Value="Total" ValueExpression="() => Total" readonly/>
-                        </div>
-                    </div> 
-
                 </div>
-			</div>
 
-			@* footer *@
-			<div class="card-footer text-center mt-2">
-				<a href="/Servicios" class="btn btn-secondary">
-					<span class="bi bi-arrow-left"></span> Volver
-				</a>
+                <hr />
 
-				<button type="submit" class="btn btn-primary bi bi-floppy">
-					Guardar
-				</button>
-			</div>
-		</div>
-	</div>
-</EditForm>
+                <h6 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Material</h6>
 
-@code
-{
-    private Materiales material = new();
-    private Servicios servicio = new();
-    private Facturas facturas = new();
+                <div class="row g-3 mb-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Material</label>
+                        <select class="form-control" value="@materialSeleccionadoId"
+                                @onchange="OnMaterialSeleccionado">
+                            <option value="0" disabled selected>Seleccione</option>
+                            @foreach (var material in ListaMateriales)
+                            {
+                                <option value="@material.MaterialId">
+                                    @material.Nombre - Stock: @material.CantidadDisponible
+                                </option>
+                            }
+                        </select>
+                    </div>
 
-    private List<Materiales?> ListaProductos { get; set; } = new();
-    private List<Servicios?> ListaServicios { get; set; } = new();
+                    <div class="col-md-2">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" @bind="cantidadMaterialTemp" min="1" />
+                    </div>
 
-    private double PrecioServicio { get; set; }
-    private double PrecioMateriales { get; set; }
-    private string CodigoGenerado { get; set; }
-    private double Total => PrecioMateriales + PrecioServicio;
-    private int Cantidad = 1;
+                    <div class="col-md-3">
+                        <label class="form-label">Precio Unitario</label>
+                        <input type="number" class="form-control" readonly @bind="precioMaterialTemp" min="0.01" step="0.01" />
+                        @if (materialSeleccionado != null)
+                        {
+                            <small class="text-muted">
+                                Precio sugerido: @materialSeleccionado.Precio.ToString("C2")
+                            </small>
+                        }
+                    </div>
 
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-success w-100" @onclick="AgregarMaterial">
+                            <i class="bi bi-plus"></i> Agregar
+                        </button>
+                    </div>
+                </div>
 
-	protected override async Task OnInitializedAsync()
+                <h6 class="mb-3"><i class="bi bi-plus-circle"></i> Agregar Servicio</h6>
+
+                <div class="row g-3 mb-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Servicio</label>
+                        <select class="form-control" value="@servicioSeleccionadoId"
+                                @onchange="OnServicioSeleccionado">
+                            <option value="0" disabled selected>Seleccione</option>
+                            @foreach (var servicio in ListaServicios)
+                            {
+                                <option value="@servicio.ServicioId">
+                                    @servicio.Nombre
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" class="form-control" @bind="cantidadServicioTemp" min="1" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Precio Unitario</label>
+                        <input type="number" class="form-control" readonly @bind="precioServicioTemp" min="0.01" step="0.01" />
+                        @if (servicioSeleccionado != null)
+                        {
+                            <small class="text-muted">
+                                Precio sugerido: @servicioSeleccionado.Precio.ToString("C2")
+                            </small>
+                        }
+                    </div>
+
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-success w-100" @onclick="AgregarServicio">
+                            <i class="bi bi-plus"></i> Agregar
+                        </button>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(mensajeError))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @mensajeError
+                        <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
+                    </div>
+                }
+
+                <h6 class="mb-3"><i class="bi bi-list-ul"></i> Detalles de la Factura</h6>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Tipo</th>
+                                <th>Nombre</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unit.</th>
+                                <th>Importe</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (factura.Detalles.Any() || factura.Servicios.Any())
+                            {
+                                @foreach (var (detalle, index) in factura.Detalles.Select((d, i) => (d, i)))
+                                {
+                                    <tr>
+                                        <td>@(index + 1)</td>
+                                        <td><span class="badge bg-info">Material</span></td>
+                                        <td>@ObtenerNombreMaterial(detalle.MaterialId)</td>
+                                        <td>@detalle.Cantidad</td>
+                                        <td>@detalle.Precio.ToString("C2")</td>
+                                        <td>@((detalle.Cantidad * detalle.Precio).ToString("C2"))</td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    @onclick="() => EliminarDetalle(index)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+
+                                @foreach (var (servicio, index) in factura.Servicios.Select((s, i) => (s, i)))
+                                {
+                                    <tr>
+                                        <td>@(factura.Detalles.Count + index + 1)</td>
+                                        <td><span class="badge bg-warning">Servicio</span></td>
+                                        <td>@ObtenerNombreServicio(servicio.ServicioId)</td>
+                                        <td>@servicio.Cantidad</td>
+                                        <td>@servicio.Precio.ToString("C2")</td>
+                                        <td>@((servicio.Cantidad * servicio.Precio).ToString("C2"))</td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    @onclick="() => EliminarServicio(index)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        No hay materiales ni servicios agregados
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-primary">
+                                <td colspan="5" class="text-end"><strong>TOTAL:</strong></td>
+                                <td colspan="2"><strong>@CalcularTotal().ToString("C2")</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <a href="/Facturacion" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <button type="submit" class="btn btn-primary" disabled="@(!(factura.Detalles.Any() || factura.Servicios.Any()))">
+                        <i class="bi bi-floppy"></i> Guardar Factura
+                    </button>
+                </div>
+            </EditForm>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private Facturas factura = new();
+    private List<Materiales> ListaMateriales = new();
+    private List<Servicios> ListaServicios = new();
+    private string mensajeError = string.Empty;
+
+    private int materialSeleccionadoId = 0;
+    private Materiales? materialSeleccionado = null;
+    private int cantidadMaterialTemp = 1;
+    private decimal precioMaterialTemp = 0;
+
+    private int servicioSeleccionadoId = 0;
+    private Servicios? servicioSeleccionado = null;
+    private int cantidadServicioTemp = 1;
+    private decimal precioServicioTemp = 0;
+
+    protected override async Task OnInitializedAsync()
     {
-        
-        facturas.Fecha = DateTime.Today;
-        CodigoGenerado = $"FAC-{DateTime.Now:yyyy}-{Guid.NewGuid().ToString()[..6]}";
-        facturas.CodigoFactura = CodigoGenerado;
-        
-        
-        
-        ListaProductos = await materialService.Listar(p => p.MaterialId > 0);
-        ListaServicios = await servicioService.Listar(s => s.ServicioId > 0);
-	}
+        ListaMateriales = await materialService.Listar(m => m.Estado == Estados.Activo);
+        ListaServicios = await servicioService.Listar(s => s.Estado == Estados.Activo);
+        factura.Fecha = DateTime.Now;
+        factura.CodigoFactura = $"FAC-{DateTime.Now:yyyyMMddHHmmss}";
+    }
 
-	 private void CambiodeMaterial()
-	 {
+    private void OnMaterialSeleccionado(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            materialSeleccionadoId = id;
+            materialSeleccionado = ListaMateriales.FirstOrDefault(m => m.MaterialId == id);
 
-		var mat = ListaProductos.FirstOrDefault(x => x.MaterialId == material.MaterialId);
+            if (materialSeleccionado != null)
+            {
+                precioMaterialTemp = (decimal)materialSeleccionado.Precio;
+            }
+        }
+    }
 
-		if (mat != null)
-	 	{
-	 		PrecioMateriales = mat.Precio * Cantidad;
-		}
-	 	else
-	 	{
-	 		PrecioMateriales = 0;
-	 	}
-	 }
-     private void CambiodeServicio()
-     {
+    private void OnServicioSeleccionado(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            servicioSeleccionadoId = id;
+            servicioSeleccionado = ListaServicios.FirstOrDefault(s => s.ServicioId == id);
 
-         var serv = ListaServicios.FirstOrDefault(x => x.ServicioId == servicio.ServicioId);
+            if (servicioSeleccionado != null)
+            {
+                precioServicioTemp = (decimal)servicioSeleccionado.Precio;
+            }
+        }
+    }
 
-         if (serv != null)
-         {
-             PrecioServicio = serv.Precio;
-         }
-         else
-         {
-            PrecioServicio = 0;
-         }
-     }
-     
+    private void AgregarMaterial()
+    {
+        mensajeError = string.Empty;
 
-     private async Task Guardar()
-     {
+        if (materialSeleccionadoId <= 0)
+        {
+            mensajeError = "Debe seleccionar un material";
+            return;
+        }
 
-         var mat = ListaProductos.FirstOrDefault(x => x.MaterialId == material.MaterialId);
-         if (servicio.ServicioId == 0)
-         {
-             toastService.ShowError("Debe seleccionar un servicio");
-             return;
-         }
-         
-         if (mat == null || mat.CantidadDisponible < Cantidad)
-         {
-             toastService.ShowError("Stock insuficiente");
-             return;
-         }
+        if (cantidadMaterialTemp <= 0)
+        {
+            mensajeError = "La cantidad debe ser mayor a 0";
+            return;
+        }
 
-         var factura = new Facturas()
-         {
-             CodigoFactura = facturas.CodigoFactura,
-             Nombre = facturas.Nombre,
-             Fecha = facturas.Fecha,
-             MontoTotal = Total,
-             EstadoFactura = EstadosFactura.Pendiente,
+        if (precioMaterialTemp <= 0)
+        {
+            mensajeError = "El precio debe ser mayor a 0";
+            return;
+        }
 
-             MaterialId = material.MaterialId,   
-             Cantidad = Cantidad                
-         };
+        var material = ListaMateriales.FirstOrDefault(m => m.MaterialId == materialSeleccionadoId);
+        if (material == null || material.CantidadDisponible < cantidadMaterialTemp)
+        {
+            mensajeError = "No hay suficiente cantidad disponible de este material";
+            return;
+        }
 
-         var guardar = await facturaService.Guardar(factura);
+        if (factura.Detalles.Any(d => d.MaterialId == materialSeleccionadoId))
+        {
+            mensajeError = "Este material ya fue agregado a la factura";
+            return;
+        }
 
-         if (guardar)
-         {
-             toastService.ShowSuccess("La factura ha sido creada con éxito");
-             navegar.NavigateTo("/Facturacion");
-         }
-         else
-         {
-             toastService.ShowError("Error: no se pudo guardar la factura");
-         }
-     }
+        factura.Detalles.Add(new FacturaDetalle
+        {
+            MaterialId = materialSeleccionadoId,
+            Cantidad = cantidadMaterialTemp,
+            Precio = precioMaterialTemp
+        });
+
+        materialSeleccionadoId = 0;
+        materialSeleccionado = null;
+        cantidadMaterialTemp = 1;
+        precioMaterialTemp = 0;
+    }
+
+    private void AgregarServicio()
+    {
+        mensajeError = string.Empty;
+
+        if (servicioSeleccionadoId <= 0)
+        {
+            mensajeError = "Debe seleccionar un servicio";
+            return;
+        }
+
+        if (cantidadServicioTemp <= 0)
+        {
+            mensajeError = "La cantidad debe ser mayor a 0";
+            return;
+        }
+
+        if (precioServicioTemp <= 0)
+        {
+            mensajeError = "El precio debe ser mayor a 0";
+            return;
+        }
+
+        if (factura.Servicios.Any(s => s.ServicioId == servicioSeleccionadoId))
+        {
+            mensajeError = "Este servicio ya fue agregado a la factura";
+            return;
+        }
+
+        factura.Servicios.Add(new FacturaServicio
+        {
+            ServicioId = servicioSeleccionadoId,
+            Cantidad = cantidadServicioTemp,
+            Precio = precioServicioTemp
+        });
+
+        servicioSeleccionadoId = 0;
+        servicioSeleccionado = null;
+        cantidadServicioTemp = 1;
+        precioServicioTemp = 0;
+    }
+
+    private void EliminarDetalle(int index)
+    {
+        if (index >= 0 && index < factura.Detalles.Count)
+        {
+            factura.Detalles.RemoveAt(index);
+        }
+    }
+
+    private void EliminarServicio(int index)
+    {
+        if (index >= 0 && index < factura.Servicios.Count)
+        {
+            factura.Servicios.RemoveAt(index);
+        }
+    }
+
+    private string ObtenerNombreMaterial(int materialId)
+    {
+        return ListaMateriales.FirstOrDefault(m => m.MaterialId == materialId)?.Nombre ?? "Desconocido";
+    }
+
+    private string ObtenerNombreServicio(int servicioId)
+    {
+        return ListaServicios.FirstOrDefault(s => s.ServicioId == servicioId)?.Nombre ?? "Desconocido";
+    }
+
+    private decimal CalcularTotal()
+    {
+        var totalMateriales = factura.Detalles.Sum(d => d.Cantidad * d.Precio);
+        var totalServicios = factura.Servicios.Sum(s => s.Cantidad * s.Precio);
+        return totalMateriales + totalServicios;
+    }
+
+    private async Task Guardar()
+    {
+        if (!factura.Detalles.Any() && !factura.Servicios.Any())
+        {
+            toastService.ShowError("Debe agregar al menos un material o servicio");
+            return;
+        }
+
+        factura.MontoTotal = CalcularTotal();
+        var resultado = await facturaService.Guardar(factura);
+
+        if (resultado)
+        {
+            toastService.ShowSuccess("La factura ha sido creada con éxito");
+            navegar.NavigateTo("/Facturacion");
+        }
+        else
+        {
+            toastService.ShowError("Error: no se pudo guardar la factura (posible stock insuficiente)");
+        }
+    }
 }

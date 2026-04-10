@@ -1,0 +1,167 @@
+@page "/Facturacion/Detalle/{FacturaId:int}"
+@rendermode InteractiveServer
+
+@using CleanHome.Models
+@using CleanHome.Services
+@using CleanHome.Extensions
+
+@inject FacturaService facturaService
+@inject NavigationManager navegar
+@inject ToastService toastService
+
+<PageTitle>Detalle de Factura</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+
+        <div class="card-header text-center bg-primary text-white">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-file-earmark-text"></i> Detalle de Factura #@FacturaId
+            </h5>
+        </div>
+
+        <div class="card-body">
+            @if (factura == null)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Cargando información...</p>
+                </div>
+            }
+            else
+            {
+                <div class="row mb-4 g-3">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Código Factura</h6>
+                                <p class="mb-0 fw-bold">@factura.CodigoFactura</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Fecha</h6>
+                                <p class="mb-0 fw-bold">@factura.Fecha.ToShortDateString()</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Estado Factura</h6>
+                                <p class="mb-0 fw-bold">
+                                    @if (factura.EstadoFactura == EstadosFactura.Pendiente)
+                                    {
+                                        <span class="badge bg-warning text-dark">Pendiente</span>
+                                    }
+                                    else if (factura.EstadoFactura == EstadosFactura.Pagada)
+                                    {
+                                        <span class="badge bg-success">Pagada</span>
+                                    }
+                                    else if (factura.EstadoFactura == EstadosFactura.Cancelada)
+                                    {
+                                        <span class="badge bg-danger">Cancelada</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <h6 class="mb-3"><i class="bi bi-list-ul"></i> Detalles de la Factura</h6>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (factura.Detalles.Any() || factura.Servicios.Any())
+                            {
+                                @foreach (var detalle in factura.Detalles.Select((d, i) => new { d, i }))
+                                {
+                                    <tr>
+                                        <td>@(detalle.i + 1)</td>
+                                        <td><span class="badge bg-info">Material</span></td>
+                                        <td>@(detalle.d.Material?.Nombre ?? "Desconocido")</td>
+                                        <td class="text-center">@detalle.d.Cantidad</td>
+                                        <td class="text-end">@detalle.d.Precio.ToString("C2")</td>
+                                        <td class="text-end">@((detalle.d.Cantidad * detalle.d.Precio).ToString("C2"))</td>
+                                    </tr>
+                                }
+                                @foreach (var servicio in factura.Servicios.Select((s, i) => new { s, i }))
+                                {
+                                    <tr>
+                                        <td>@(factura.Detalles.Count + servicio.i + 1)</td>
+                                        <td><span class="badge bg-warning text-dark">Servicio</span></td>
+                                        <td>@(servicio.s.Servicio?.Nombre ?? "Desconocido")</td>
+                                        <td class="text-center">@servicio.s.Cantidad</td>
+                                        <td class="text-end">@servicio.s.Precio.ToString("C2")</td>
+                                        <td class="text-end">@((servicio.s.Cantidad * servicio.s.Precio).ToString("C2"))</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        No hay detalles en esta factura
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-primary">
+                                <td colspan="5" class="text-end"><strong>TOTAL:</strong></td>
+                                <td class="text-end"><strong>@factura.MontoTotal.ToString("C2")</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <hr />
+
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <a href="/Facturacion" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+
+                    <a href="@($"/Facturacion/Editar/{factura.FacturaId}")" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int FacturaId { get; set; }
+
+    private Facturas? factura = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        factura = await facturaService.Buscar(FacturaId);
+
+        if (factura == null)
+        {
+            toastService.ShowError("Factura no encontrada");
+            navegar.NavigateTo("/Facturacion");
+        }
+    }
+}

@@ -11,10 +11,10 @@
 
 <div class="container">
 	<div class="card shadow-lg">
-		<div class="card-header d-flex justify-content-between align-center ">
-			<h5 class="card-title">Registro de Facturas</h5>
+		<div class="card-header d-flex justify-content-between align-items-center">
+			<h5 class="card-title mb-0">Registro de Facturas</h5>
 			<a href="/Facturacion/Crear" class="btn btn-primary">
-				<span class="bi-plus-square mt-3"></span> Crear
+				<span class="bi bi-plus-square"></span> Crear
 			</a>
 		</div>
 
@@ -32,86 +32,113 @@
 				<div class="row align-items-center">
 					<div class="col-6">
 						<InputSelect class="form-control" @bind-Value="Filtro">
-                            <option value="" selected disabled hidden>Elija una opción</option>
-                            <option value="">Todos</option>
-							<option value="Codigo">Codigo de Factura</option>
+							<option value="" selected disabled hidden>Elija una opción</option>
+							<option value="">Todos</option>
+							<option value="Codigo">Código de Factura</option>
 							<option value="Nombre">Nombre</option>
 							<option value="Fecha">Fecha</option>
 							<option value="Pagada">Pagadas</option>
-							<option value="Pendiente">Pendiente</option>
-							<option value="FacturasEliminadas">Facturas Eliminadas</option>
+							<option value="Pendiente">Pendientes</option>
+							<option value="Cancelada">Canceladas</option>
+							<option value="FacturasEliminadas">Facturas Inactivas</option>
 						</InputSelect>
 					</div>
 
 					<div class="col-6">
 						<div class="input-group">
-							<div class="input-group">
-
-								@if (Filtro == "Fecha")
-								{
-									<InputDate @bind-Value="FechaFiltro" class="form-control" />
-								}
-								else
-								{
-									<input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
-								}
-
-								<button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
-							</div>
+							@if (Filtro == "Fecha")
+							{
+								<InputDate @bind-Value="FechaFiltro" class="form-control" />
+							}
+							else
+							{
+								<input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+							}
+							<button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<table class="table table-hover">
-				<thead class="table-primary">
-					<tr>
-						<th>Codigo</th>
-						<th>Nombre</th>
-						<th>Fecha</th>
-						<th>Monto Total</th>
-						<th>Estado</th>
-						<th>Opciones</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var factura in ListaFacturas)
-					{
+			<div class="table-responsive">
+				<table class="table table-hover">
+					<thead class="table-primary">
 						<tr>
-							@if (factura.Estado == Estados.Inactivo)
-							{
-								<td class="text-muted"> @factura.CodigoFactura</td>
-								<td class="text-muted"> @factura.Nombre</td>
-								<td class="text-muted"> @factura.Fecha</td>
-								<td class="text-muted"> @factura.MontoTotal</td>
-								<td class="text-muted"> @factura.EstadoFactura</td>
-							}
-							else
-							{
-								<td> @factura.CodigoFactura</td>
-								<td> @factura.Nombre</td>
-								<td> @factura.Fecha</td>
-								<td> @factura.MontoTotal</td>
-								<td> @factura.EstadoFactura</td>
-							}
-							<td class="text-center">
-								<a href="@($"/Facturacion/Editar/{factura.FacturaId}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
-							</td>
+							<th>Código</th>
+							<th>Nombre</th>
+							<th>Fecha</th>
+							<th>Monto Total</th>
+							<th>Estado Factura</th>
+							<th>Estado</th>
+							<th class="text-center">Opciones</th>
 						</tr>
-					}
+					</thead>
+					<tbody>
+						@if (ListaFacturas.Count == 0)
+						{
+							<tr>
+								<td colspan="7" class="text-center text-muted py-4">
+									No hay facturas que mostrar
+								</td>
+							</tr>
+						}
+						else
+						{
+							@foreach (var factura in ListaFacturas)
+							{
+								<tr class="@(factura.Estado == Estados.Inactivo ? "text-muted" : "")">
+									<td>@factura.CodigoFactura</td>
+									<td>@factura.Nombre</td>
+									<td>@factura.Fecha.ToShortDateString()</td>
+									<td>@factura.MontoTotal.ToString("C2")</td>
+									<td>
+										@if (factura.EstadoFactura == EstadosFactura.Pendiente)
+										{
+											<span class="badge bg-warning text-dark">Pendiente</span>
+										}
+										else if (factura.EstadoFactura == EstadosFactura.Pagada)
+										{
+											<span class="badge bg-success">Pagada</span>
+										}
+										else if (factura.EstadoFactura == EstadosFactura.Cancelada)
+										{
+											<span class="badge bg-danger">Cancelada</span>
+										}
+									</td>
+									<td>
+										@if (factura.Estado == Estados.Activo)
+										{
+											<span class="badge bg-success">Activa</span>
+										}
+										else
+										{
+											<span class="badge bg-secondary">Inactiva</span>
+										}
+									</td>
+									<td class="text-center">
+										<a href="@($"/Facturacion/Detalle/{factura.FacturaId}")" 
+										   class="btn btn-outline-info btn-sm bi bi-eye" 
+										   title="Ver Detalle"></a>
+										<a href="@($"/Facturacion/Editar/{factura.FacturaId}")" 
+										   class="btn btn-outline-primary btn-sm bi bi-pencil-square" 
+										   title="Editar"></a>
+									</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
 
-				</tbody>
-			</table>
-
-			<div class="card-footer space-between">
-				<label>Cantidad: @ListaFacturas.Count()</label>
+			<div class="card-footer text-muted">
+				<small>Total de registros: @ListaFacturas.Count()</small>
 			</div>
 		</div>
 	</div>
 </div>
 
 @code {
-	DateTime? FechaFiltro { get; set; }
+	private DateTime? FechaFiltro { get; set; }
 	private List<Facturas> ListaFacturas { get; set; } = new();
 
 	private string Filtro { get; set; } = "";
@@ -119,29 +146,35 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.FacturaId > 0);
+		await CargarFacturas();
 	}
 
-    private async Task Buscar()
-    {
-        if (string.IsNullOrWhiteSpace(Filtro))
-        {
-            ListaFacturas = await facturaService.Listar(a => a.Estado == Estados.Activo && a.FacturaId > 0);
-            return;
-        }
+	private async Task CargarFacturas()
+	{
+        ListaFacturas = await facturaService.Listar(a =>
+            a.FacturaId > 0 && a.Estado == Estados.Activo);
+	}
 
-        switch (Filtro)
-        {
+	private async Task Buscar()
+	{
+		if (string.IsNullOrWhiteSpace(Filtro) || Filtro == "")
+		{
+			await CargarFacturas();
+			return;
+		}
+
+		switch (Filtro)
+		{
             case "Codigo":
                 ListaFacturas = await facturaService.Listar(a =>
                     a.Estado == Estados.Activo &&
-                    a.CodigoFactura.ToLower().Contains(ValorFiltro.ToLower()));
+                    (a.CodigoFactura ?? "").ToLower().Contains(ValorFiltro.ToLower()));
                 break;
 
             case "Nombre":
                 ListaFacturas = await facturaService.Listar(a =>
                     a.Estado == Estados.Activo &&
-                    a.Nombre.ToLower().Contains(ValorFiltro.ToLower()));
+                    (a.Nombre ?? "").ToLower().Contains(ValorFiltro.ToLower()));
                 break;
 
             case "Fecha":
@@ -153,22 +186,25 @@
                 }
                 break;
 
-            case "Pagada":
-                ListaFacturas = await facturaService.Listar(a =>
-                    a.Estado == Estados.Activo &&
-                    a.EstadoFactura == EstadosFactura.Pagada);
-                break;
+			case "Pagada":
+				ListaFacturas = await facturaService.Listar(a =>
+					a.EstadoFactura == EstadosFactura.Pagada && a.Estado == Estados.Activo);
+				break;
 
-            case "Pendiente":
-                ListaFacturas = await facturaService.Listar(a =>
-                    a.Estado == Estados.Activo &&
-                    a.EstadoFactura == EstadosFactura.Pendiente);
-                break;
+			case "Pendiente":
+				ListaFacturas = await facturaService.Listar(a =>
+					a.EstadoFactura == EstadosFactura.Pendiente && a.Estado == Estados.Activo);
+				break;
 
-            case "FacturasEliminadas":
-                ListaFacturas = await facturaService.Listar(a =>
-                    a.Estado == Estados.Inactivo);
-                break;
-        }
-    }
+			case "Cancelada":
+				ListaFacturas = await facturaService.Listar(a =>
+					a.EstadoFactura == EstadosFactura.Cancelada & a.Estado != Estados.Inactivo);
+				break;
+
+			case "FacturasEliminadas":
+				ListaFacturas = await facturaService.Listar(a =>
+					a.Estado == Estados.Inactivo);
+				break;
+		}
+	}
 }
