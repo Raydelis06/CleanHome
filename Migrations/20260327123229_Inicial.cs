@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CleanHome.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicial : Migration
+    public partial class inicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -79,7 +79,8 @@ namespace CleanHome.Migrations
                     Unidad = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Precio = table.Column<double>(type: "float", nullable: false),
                     ProveedorId = table.Column<int>(type: "int", nullable: false),
-                    Estado = table.Column<int>(type: "int", nullable: false)
+                    Estado = table.Column<int>(type: "int", nullable: false),
+                    Cantidad = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -151,6 +152,57 @@ namespace CleanHome.Migrations
                     table.PrimaryKey("PK_TiposPropiedad", x => x.TipoPropiedadId);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "OrdenesCompra",
+                columns: table => new
+                {
+                    OrdenCompraId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProveedorId = table.Column<int>(type: "int", nullable: false),
+                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Estado = table.Column<int>(type: "int", nullable: false),
+                    EstadoOrden = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrdenesCompra", x => x.OrdenCompraId);
+                    table.ForeignKey(
+                        name: "FK_OrdenesCompra_Proveedores_ProveedorId",
+                        column: x => x.ProveedorId,
+                        principalTable: "Proveedores",
+                        principalColumn: "ProveedorId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrdenesCompraDetalle",
+                columns: table => new
+                {
+                    OrdenCompraDetalleId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrdenCompraId = table.Column<int>(type: "int", nullable: false),
+                    MaterialId = table.Column<int>(type: "int", nullable: false),
+                    Cantidad = table.Column<int>(type: "int", nullable: false),
+                    Precio = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrdenesCompraDetalle", x => x.OrdenCompraDetalleId);
+                    table.ForeignKey(
+                        name: "FK_OrdenesCompraDetalle_Materiales_MaterialId",
+                        column: x => x.MaterialId,
+                        principalTable: "Materiales",
+                        principalColumn: "MaterialId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrdenesCompraDetalle_OrdenesCompra_OrdenCompraId",
+                        column: x => x.OrdenCompraId,
+                        principalTable: "OrdenesCompra",
+                        principalColumn: "OrdenCompraId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "TiposPropiedad",
                 columns: new[] { "TipoPropiedadId", "Descripcion", "Estado" },
@@ -163,6 +215,21 @@ namespace CleanHome.Migrations
                     { 5, "Villa", 0 },
                     { 6, "Local Comercial", 0 }
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrdenesCompra_ProveedorId",
+                table: "OrdenesCompra",
+                column: "ProveedorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrdenesCompraDetalle_MaterialId",
+                table: "OrdenesCompraDetalle",
+                column: "MaterialId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrdenesCompraDetalle_OrdenCompraId",
+                table: "OrdenesCompraDetalle",
+                column: "OrdenCompraId");
         }
 
         /// <inheritdoc />
@@ -178,19 +245,25 @@ namespace CleanHome.Migrations
                 name: "Facturas");
 
             migrationBuilder.DropTable(
-                name: "Materiales");
+                name: "OrdenesCompraDetalle");
 
             migrationBuilder.DropTable(
                 name: "Propiedades");
-
-            migrationBuilder.DropTable(
-                name: "Proveedores");
 
             migrationBuilder.DropTable(
                 name: "Servicios");
 
             migrationBuilder.DropTable(
                 name: "TiposPropiedad");
+
+            migrationBuilder.DropTable(
+                name: "Materiales");
+
+            migrationBuilder.DropTable(
+                name: "OrdenesCompra");
+
+            migrationBuilder.DropTable(
+                name: "Proveedores");
         }
     }
 }

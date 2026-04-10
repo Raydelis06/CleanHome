@@ -13,6 +13,7 @@ builder.Services.AddRazorComponents()
 var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
 //Inyectar el contexto
 builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(ConStr));
+builder.Services.AddScoped<OrdenCompraService>();
 builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<EmpleadoService>();
 builder.Services.AddScoped<ProveedorService>();
