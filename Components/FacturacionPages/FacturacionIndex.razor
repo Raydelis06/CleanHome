@@ -35,7 +35,7 @@
 							<option value="" selected disabled hidden>Elija una opción</option>
 							<option value="">Todos</option>
 							<option value="Codigo">Código de Factura</option>
-							<option value="Nombre">Nombre</option>
+							<option value="Cliente">Cliente</option>
 							<option value="Fecha">Fecha</option>
 							<option value="Pagada">Pagadas</option>
 							<option value="Pendiente">Pendientes</option>
@@ -65,11 +65,10 @@
 					<thead class="table-primary">
 						<tr>
 							<th>Código</th>
-							<th>Nombre</th>
+							<th>Cliente</th>
 							<th>Fecha</th>
 							<th>Monto Total</th>
 							<th>Estado Factura</th>
-							<th>Estado</th>
 							<th class="text-center">Opciones</th>
 						</tr>
 					</thead>
@@ -77,7 +76,7 @@
 						@if (ListaFacturas.Count == 0)
 						{
 							<tr>
-								<td colspan="7" class="text-center text-muted py-4">
+								<td colspan="6" class="text-center text-muted py-4">
 									No hay facturas que mostrar
 								</td>
 							</tr>
@@ -85,46 +84,36 @@
 						else
 						{
 							@foreach (var factura in ListaFacturas)
-							{
-								<tr class="@(factura.Estado == Estados.Inactivo ? "text-muted" : "")">
-									<td>@factura.CodigoFactura</td>
-									<td>@factura.Nombre</td>
-									<td>@factura.Fecha.ToShortDateString()</td>
-									<td>@factura.MontoTotal.ToString("C2")</td>
-									<td>
-										@if (factura.EstadoFactura == EstadosFactura.Pendiente)
-										{
-											<span class="badge bg-warning text-dark">Pendiente</span>
-										}
-										else if (factura.EstadoFactura == EstadosFactura.Pagada)
-										{
-											<span class="badge bg-success">Pagada</span>
-										}
-										else if (factura.EstadoFactura == EstadosFactura.Cancelada)
-										{
-											<span class="badge bg-danger">Cancelada</span>
-										}
-									</td>
-									<td>
-										@if (factura.Estado == Estados.Activo)
-										{
-											<span class="badge bg-success">Activa</span>
-										}
-										else
-										{
-											<span class="badge bg-secondary">Inactiva</span>
-										}
-									</td>
-									<td class="text-center">
-										<a href="@($"/Facturacion/Detalle/{factura.FacturaId}")" 
-										   class="btn btn-outline-info btn-sm bi bi-eye" 
-										   title="Ver Detalle"></a>
-										<a href="@($"/Facturacion/Editar/{factura.FacturaId}")" 
-										   class="btn btn-outline-primary btn-sm bi bi-pencil-square" 
-										   title="Editar"></a>
-									</td>
-								</tr>
-							}
+								{
+									<tr class="@(factura.Estado == Estados.Inactivo ? "text-muted" : "")">
+										<td>@factura.CodigoFactura</td>
+										<td>@factura.Nombre</td>
+										<td>@factura.Fecha.ToShortDateString()</td>
+										<td>@factura.MontoTotal.ToString("C2")</td>
+										<td>
+											@if (factura.EstadoFactura == EstadosFactura.Pendiente)
+											{
+												<span class="badge bg-warning text-dark">Pendiente</span>
+											}
+											else if (factura.EstadoFactura == EstadosFactura.Pagada)
+											{
+												<span class="badge bg-success">Pagada</span>
+											}
+											else if (factura.EstadoFactura == EstadosFactura.Cancelada)
+											{
+												<span class="badge bg-danger">Cancelada</span>
+											}
+										</td>
+										<td class="text-center">
+											<a href="@($"/Facturacion/Detalle/{factura.FacturaId}")" 
+											   class="btn btn-outline-info btn-sm bi bi-eye" 
+											   title="Ver Detalle"></a>
+											<a href="@($"/Facturacion/Editar/{factura.FacturaId}")" 
+											   class="btn btn-outline-primary btn-sm bi bi-pencil-square" 
+											   title="Editar"></a>
+										</td>
+									</tr>
+								}
 						}
 					</tbody>
 				</table>
@@ -165,17 +154,17 @@
 
 		switch (Filtro)
 		{
-            case "Codigo":
-                ListaFacturas = await facturaService.Listar(a =>
-                    a.Estado == Estados.Activo &&
-                    (a.CodigoFactura ?? "").ToLower().Contains(ValorFiltro.ToLower()));
-                break;
+			case "Codigo":
+				ListaFacturas = await facturaService.Listar(a =>
+					a.Estado == Estados.Activo &&
+					(a.CodigoFactura ?? "").ToLower().Contains(ValorFiltro.ToLower()));
+				break;
 
-            case "Nombre":
-                ListaFacturas = await facturaService.Listar(a =>
-                    a.Estado == Estados.Activo &&
-                    (a.Nombre ?? "").ToLower().Contains(ValorFiltro.ToLower()));
-                break;
+			case "Cliente":
+				ListaFacturas = await facturaService.Listar(a =>
+					a.Estado == Estados.Activo &&
+					(a.Nombre ?? "").ToLower().Contains(ValorFiltro.ToLower()));
+				break;
 
             case "Fecha":
                 if (FechaFiltro != null)

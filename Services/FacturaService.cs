@@ -130,6 +130,7 @@ namespace CleanHome.Services
             await using var contexto = await DbFactory.CreateDbContextAsync();
 
             return await contexto.Facturas
+                .Include(f => f.Cliente)
                 .Include(f => f.Detalles)
                     .ThenInclude(d => d.Material)
                 .Include(f => f.Servicios)
@@ -144,6 +145,7 @@ namespace CleanHome.Services
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
             return await contexto.Facturas
+                .Include(f => f.Cliente)
                 .Include(f => f.Detalles)
                     .ThenInclude(d => d.Material)
                 .Include(f => f.Servicios)
@@ -153,12 +155,13 @@ namespace CleanHome.Services
                 .ToListAsync();
         }
 
-        
+
         public async Task<Facturas?> Buscar(int id)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
 
             return await contexto.Facturas
+                .Include(f => f.Cliente)
                 .Include(f => f.Detalles)
                     .ThenInclude(d => d.Material)
                 .Include(f => f.Servicios)
@@ -222,7 +225,7 @@ namespace CleanHome.Services
                 .Include(f => f.Servicios)
                 .FirstOrDefaultAsync(f => f.FacturaId == facturaParam.FacturaId);
 
-            if (factura == null || factura.EstadoFactura != EstadosFactura.Cancelada)
+            if (factura == null || factura.Estado != Estados.Inactivo)
                 return false;
 
             foreach (var item in factura.Detalles)
@@ -240,7 +243,6 @@ namespace CleanHome.Services
                 }
             }
 
-            factura.EstadoFactura = EstadosFactura.Pendiente;
             factura.Estado = Estados.Activo;
 
             return await contexto.SaveChangesAsync() > 0;

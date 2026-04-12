@@ -8,6 +8,7 @@
 @inject FacturaService facturaService
 @inject MaterialService materialService
 @inject ServicioService servicioService
+@inject ClienteService clienteService
 @inject NavigationManager navegar
 @inject ToastService toastService
 
@@ -27,14 +28,19 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label"><strong>Código Factura</strong></label>
-                        <InputText class="form-control" @bind-Value="factura.CodigoFactura" readonly />
+                        <label class="form-label"><strong>Cliente</strong></label>
+                        <select class="form-control" @onchange="OnClienteSeleccionado">
+                            <option value="0" disabled selected>Seleccione un cliente</option>
+                            @foreach (var cliente in ListaClientes)
+                            {
+                                <option value="@cliente.ClienteId">@cliente.Nombre</option>
+                            }
+                        </select>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label"><strong>Nombre</strong></label>
-                        <InputText class="form-control" @bind-Value="factura.Nombre" />
-                        <ValidationMessage For="@(() => factura.Nombre)" />
+                        <label class="form-label"><strong>Código Factura</strong></label>
+                        <InputText class="form-control" @bind-Value="factura.CodigoFactura" readonly />
                     </div>
 
                     <div class="col-md-6">
@@ -224,6 +230,7 @@
     private Facturas factura = new();
     private List<Materiales> ListaMateriales = new();
     private List<Servicios> ListaServicios = new();
+    private List<Clientes> ListaClientes = new();
     private string mensajeError = string.Empty;
 
     private int materialSeleccionadoId = 0;
@@ -236,12 +243,28 @@
     private int cantidadServicioTemp = 1;
     private decimal precioServicioTemp = 0;
 
+    private int clienteSeleccionadoId = 0;
+
     protected override async Task OnInitializedAsync()
     {
         ListaMateriales = await materialService.Listar(m => m.Estado == Estados.Activo);
         ListaServicios = await servicioService.Listar(s => s.Estado == Estados.Activo);
+        ListaClientes = await clienteService.Listar(c => c.Estado == Estados.Activo);
         factura.Fecha = DateTime.Now;
         factura.CodigoFactura = $"FAC-{DateTime.Now:yyyyMMddHHmmss}";
+    }
+
+    private void OnClienteSeleccionado(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            clienteSeleccionadoId = id;
+            var cliente = ListaClientes.FirstOrDefault(c => c.ClienteId == id);
+            if (cliente != null)
+            {
+                factura.Nombre = cliente.Nombre;
+            }
+        }
     }
 
     private void OnMaterialSeleccionado(ChangeEventArgs e)
@@ -396,12 +419,19 @@
 
     private async Task Guardar()
     {
+        if (clienteSeleccionadoId <= 0)
+        {
+            toastService.ShowError("Debe seleccionar un cliente");
+            return;
+        }
+
         if (!factura.Detalles.Any() && !factura.Servicios.Any())
         {
             toastService.ShowError("Debe agregar al menos un material o servicio");
             return;
         }
 
+        factura.ClienteId = clienteSeleccionadoId;
         factura.MontoTotal = CalcularTotal();
         var resultado = await facturaService.Guardar(factura);
 

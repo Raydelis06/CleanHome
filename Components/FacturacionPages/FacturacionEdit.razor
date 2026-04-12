@@ -8,8 +8,10 @@
 @inject FacturaService facturaService
 @inject MaterialService materialService
 @inject ServicioService servicioService
+@inject ClienteService clienteService
 @inject NavigationManager navegar
 @inject ToastService toastService
+@inject IJSRuntime JS
 
 <PageTitle>Editar Factura</PageTitle>
 
@@ -41,15 +43,19 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <label class="form-label">Cliente</label>
+                            <select class="form-control" @bind="factura.ClienteId" disabled="@(factura.EstadoFactura != EstadosFactura.Pendiente)">
+                                <option value="0" disabled>Seleccione un cliente</option>
+                                @foreach (var cliente in clientes)
+                                {
+                                    <option value="@cliente.ClienteId">@cliente.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Código Factura</label>
                             <InputText class="form-control" @bind-Value="factura.CodigoFactura" disabled />
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Nombre/Descripción</label>
-                            <InputText class="form-control" @bind-Value="factura.Nombre" disabled="@(factura.EstadoFactura != EstadosFactura.Pendiente)" />
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Fecha</label>
                             <InputDate class="form-control" @bind-Value="factura.Fecha" disabled="@(factura.EstadoFactura != EstadosFactura.Pendiente)" />
@@ -233,18 +239,24 @@
                             <span class="oi oi-x"></span> Cancelar Factura
                         </button>
                     }
+                    else if (factura.Estado == Estados.Inactivo)
+                    {
+                        <button type="button" class="btn btn-warning" @onclick="RecuperarFactura">
+                            <span class="oi oi-arrow-thick-left"></span> Recuperar Factura
+                        </button>
+                    }
                     else if (factura.EstadoFactura == EstadosFactura.Cancelada)
                     {
                         <button type="button" class="btn btn-warning" @onclick="RecuperarFactura">
                             <span class="oi oi-arrow-thick-left"></span> Recuperar Factura
                         </button>
-                        <button type="button" class="btn btn-danger" @onclick="EliminarFactura">
+                        <button type="button" class="btn btn-danger" @onclick="() => mostrarConfirmacionEliminar = true">
                             <span class="oi oi-trash"></span> Eliminar Factura
                         </button>
                     }
                     else if (factura.EstadoFactura == EstadosFactura.Pagada)
                     {
-                        <button type="button" class="btn btn-danger" @onclick="EliminarFactura">
+                        <button type="button" class="btn btn-danger" @onclick="() => mostrarConfirmacionEliminar = true">
                             <span class="oi oi-trash"></span> Eliminar Factura
                         </button>
                     }
@@ -256,14 +268,35 @@
         </EditForm>
     }
 </div>
+@if (mostrarConfirmacionEliminar)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirmar eliminación</h5>
+                </div>
+                <div class="modal-body">
+                    <p>¿Seguro que deseas eliminar esta factura?</p>
+                    <p class="text-danger fw-bold">Esta acción eliminara la factura</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelarEliminar">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="ConfirmarEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     [Parameter]
     public int FacturaId { get; set; }
-
+    private bool mostrarConfirmacionEliminar = false;
     private Facturas? factura;
     private List<Materiales>? materiales;
     private List<Servicios>? servicios;
+    private List<Clientes> clientes = new();
     private int materialSeleccionado;
     private int servicioSeleccionado;
     private int cantidadMaterial = 1;
@@ -283,6 +316,7 @@
 
         materiales = await materialService.Listar(m => m.Estado == Estados.Activo);
         servicios = await servicioService.Listar(s => s.Estado == Estados.Activo);
+        clientes = await clienteService.Listar(c => c.Estado == Estados.Activo);
     }
 
     private void SeleccionarMaterial(ChangeEventArgs e)
@@ -490,9 +524,41 @@
             toastService.ShowError($"Error: {ex.Message}");
         }
     }
-
+    /*
     private async Task EliminarFactura()
     {
+        bool confirmar = await JS.InvokeAsync<bool>("confirm", "¿Seguro que deseas eliminar esta factura?");
+
+        if (!confirmar)
+            return;
+
+        try
+        {
+            if (await facturaService.Eliminar(factura))
+            {
+                toastService.ShowSuccess("Factura eliminada correctamente");
+                navegar.NavigateTo("/facturacion");
+            }
+            else
+            {
+                toastService.ShowError("Error al eliminar la factura");
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+    */
+    private void CancelarEliminar()
+    {
+        mostrarConfirmacionEliminar = false;
+    }
+
+    private async Task ConfirmarEliminar()
+    {
+        mostrarConfirmacionEliminar = false;
+
         try
         {
             if (await facturaService.Eliminar(factura))
@@ -511,3 +577,4 @@
         }
     }
 }
+
