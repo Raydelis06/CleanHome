@@ -4,6 +4,8 @@
 @using System.Globalization
 @inject NavigationManager navManager
 @inject SolicitudService solicitudService
+@inject ToastService toastService
+
 @page "/"
 @rendermode InteractiveServer
 
@@ -237,44 +239,66 @@
     private List<SolicitudDTO> listaSolicitudes = new();
     private List<SolicitudDTO> solicitudesEnTabla = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        listaSolicitudes = solicitudService.ObtenerSolicitudes();
+        listaSolicitudes = await solicitudService.Listar(x => x.Id > 0);
 
-        MostrarTodas();
+        await MostrarTodas();
     }
-    private void MarcarComoCompletada(SolicitudDTO sol)
+    private async Task MarcarComoCompletada(SolicitudDTO sol)
     {
         sol.Estado = EstadoSolicitud.Completada;
+        var guardada = await solicitudService.Guardar(sol);
 
-        solicitudService.Update(sol);
-
-        RefrescarLista();
-    }
-
-    private void EliminarSolicitud(int id)
-    {
-        solicitudService.Delete(id);
-
-        RefrescarLista();
-    }
-
-    private void RefrescarLista()
-    {
-        listaSolicitudes = solicitudService.ObtenerSolicitudes();
-
-        if (fechaSeleccionada != null)
+        if (guardada)
         {
-            SeleccionarFecha(fechaSeleccionada.Value);
+            toastService.ShowSuccess("La solicitud ha sido completada con exito.");
         }
         else
         {
-            MostrarTodas();
+            toastService.ShowError("Ha ocurrido un error al intentar completar la solicitud.");
+        }
+
+        await RefrescarLista();
+    }
+
+    private async Task EliminarSolicitud(int id)
+    {
+        var encontrada = await solicitudService.Buscar(id);
+        if(encontrada != null)
+        {
+            var eliminada = await solicitudService.Eliminar(encontrada);
+            if (eliminada)
+            {
+                toastService.ShowSuccess("La solicitud ha sido eliminada con exito.");
+
+            }
+            else
+            {
+                toastService.ShowError("Ha ocurrido un error al intentar eliminar la solicitud.");
+                                
+            }
+        }
+
+        await RefrescarLista();
+    }
+
+    private async Task RefrescarLista()
+    {
+        listaSolicitudes = await solicitudService.Listar(x => x.Id > 0);
+
+        if (fechaSeleccionada != null)
+        {
+            await SeleccionarFecha(fechaSeleccionada.Value);
+        }
+        else
+        {
+            await MostrarTodas();
         }
 
         StateHasChanged();
     }
-    private void SeleccionarFecha(DateTime fecha)
+    private async Task SeleccionarFecha(DateTime fecha)
     {
         fechaSeleccionada = fecha;
 
@@ -283,7 +307,7 @@
             .ToList();
     }
 
-    private void MostrarTodas()
+    private async Task MostrarTodas()
     {
         fechaSeleccionada = null;
 
