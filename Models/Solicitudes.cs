@@ -20,5 +20,6 @@ namespace CleanHome.Models
 
         [Required(ErrorMessage = "El estado es obligatorio")]
         public EstadoSolicitud Estado { get; set; }
+        public Estados EstaInactiva { get; set; }
     }
 }
