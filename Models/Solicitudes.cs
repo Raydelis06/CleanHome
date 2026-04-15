@@ -5,11 +5,12 @@ namespace CleanHome.Models
 {
     public class SolicitudDTO
     {
+        [Key]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "El cliente es obligatorio")]
-        [StringLength(100, ErrorMessage = "Máximo 100 caracteres")]
-        public string Cliente { get; set; } = string.Empty;
+        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un cliente valido.") ]
+        public int ClienteId { get; set; }
 
         [Required(ErrorMessage = "La descripción es obligatoria")]
         [StringLength(300, ErrorMessage = "Máximo 300 caracteres")]
@@ -20,5 +21,6 @@ namespace CleanHome.Models
 
         [Required(ErrorMessage = "El estado es obligatorio")]
         public EstadoSolicitud Estado { get; set; }
+        public Estados EstaInactiva { get; set; }
     }
 }

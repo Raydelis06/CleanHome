@@ -1,0 +1,108 @@
+﻿@page "/crear-solicitud"
+@using CleanHome.Extensions
+@using CleanHome.Models
+@using CleanHome.Services
+@inject SolicitudService solicitudService
+@inject NavigationManager navManager
+@inject ToastService toastService
+@inject ClienteService clienteService
+
+
+
+<PageTitle>Crear Solicitud</PageTitle>
+<EditForm Model="nuevaSolicitud" OnValidSubmit="Guardar" FormName="CrearSolicitudForm">
+    <DataAnnotationsValidator />
+    <div class="container py-4">
+        <h2 class="mb-4">Crear Nueva Solicitud</h2>
+
+        <div class="card shadow-sm p-4 rounded-4 border-0">
+
+            <div class="mb-3">
+                <label class="form-label">Cliente</label>
+                <InputSelect class="form-control" @bind-Value="@nuevaSolicitud.ClienteId">
+                    <option value="0" selected disabled hidden>Seleccione un cliente...</option>
+                    @foreach (var cliente in ListaClientes)
+                    {
+                        <option value="@cliente.ClienteId">@cliente.Nombre</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => nuevaSolicitud.ClienteId)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <textarea class="form-control" rows="3" @bind="nuevaSolicitud.Descripcion"></textarea>
+                <ValidationMessage For="@(() => nuevaSolicitud.Descripcion)" />
+
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Fecha</label>
+                <input type="date" class="form-control" @bind="nuevaSolicitud.Fecha" />
+                <ValidationMessage For="@(() => nuevaSolicitud.Fecha)" />
+
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Estado</label>
+                <select class="form-select" @bind="nuevaSolicitud.Estado">
+                    <option value="@EstadoSolicitud.Pendiente">Pendiente</option>
+                    <option value="@EstadoSolicitud.Completada">Completada</option>
+                </select>
+                <ValidationMessage For="@(() => nuevaSolicitud.Estado)" />
+
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-primary px-4 bi bi-save" type="submit">
+                    Guardar
+                </button>
+
+                <button class="btn btn-secondary px-4 bi bi-trash" type="button" @onclick="Cancelar">
+                    Cancelar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private SolicitudDTO nuevaSolicitud = new SolicitudDTO();
+    private List<Clientes> ListaClientes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        nuevaSolicitud.Fecha = DateTime.Now;
+        nuevaSolicitud.Estado = EstadoSolicitud.Pendiente;
+        nuevaSolicitud.EstaInactiva = Estados.Activo;
+        ListaClientes = await clienteService.Listar(p => p.Estado == Estados.Activo && p.ClienteId > 0);
+
+    }
+    private async Task Guardar()
+    {
+        try
+        {
+            var creada = await solicitudService.Guardar(nuevaSolicitud);
+            if (creada)
+            {
+                toastService.ShowSuccess("La solicitud ha sido creada con exito");
+            }
+            else
+            {
+                toastService.ShowError("Ha ocurrido un error al intentar crear la solicitud.");
+
+            }
+            navManager.NavigateTo("/");
+        }catch(Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
+    }
+
+    private void Cancelar()
+    {
+        navManager.NavigateTo("/");
+    }
+}

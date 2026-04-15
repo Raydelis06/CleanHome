@@ -20,6 +20,8 @@ namespace CleanHome.DAL
         public DbSet<Facturas> Facturas { get; set; }
         public DbSet<FacturaDetalle> FacturaDetalles { get; set; }
         public DbSet<FacturaServicio> FacturaServicios { get; set; }
+        public DbSet<SolicitudDTO> Solicitudes { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
