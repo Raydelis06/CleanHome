@@ -1,5 +1,7 @@
 ﻿@page "/Account/Register"
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
 @inject UserManager<IdentityUser> UserManager
 @inject SignInManager<IdentityUser> SignInManager
 @inject NavigationManager Navigation
