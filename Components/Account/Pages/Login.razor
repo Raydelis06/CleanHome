@@ -1,0 +1,67 @@
+﻿@page "/Account/Login"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject NavigationManager Navigation
+@inject ILogger<Login> Logger
+
+<PageTitle>Iniciar Sesión</PageTitle>
+
+<h3>Iniciar Sesión</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<EditForm Model="Input" OnValidSubmit="LoginUser" FormName="login">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" />
+        <ValidationMessage For="() => Input.Email" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <InputText @bind-Value="Input.Password" type="password" class="form-control" autocomplete="current-password" />
+        <ValidationMessage For="() => Input.Password" />
+    </div>
+    <button type="submit" class="btn btn-primary">Entrar</button>
+    <a href="/Account/Register" class="ms-3">¿No tienes cuenta? Regístrate</a>
+</EditForm>
+
+@code {
+    private string? errorMessage;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private async Task LoginUser()
+    {
+        var result = await SignInManager.PasswordSignInAsync(
+            Input.Email, Input.Password, false, lockoutOnFailure: false);
+
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("Usuario autenticado.");
+            Navigation.NavigateTo(ReturnUrl ?? "/");
+        }
+        else
+        {
+            errorMessage = "Email o contraseña incorrectos.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "El email es requerido")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "La contraseña es requerida")]
+        public string Password { get; set; } = "";
+    }
+}

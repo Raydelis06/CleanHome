@@ -1,0 +1,78 @@
+﻿@page "/Account/Register"
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<IdentityUser> SignInManager
+@inject NavigationManager Navigation
+
+<PageTitle>Registrarse</PageTitle>
+
+<h3>Crear Cuenta</h3>
+
+@if (errors.Any())
+{
+    <div class="alert alert-danger">
+        @foreach (var error in errors)
+        {
+            <p>@error</p>
+        }
+    </div>
+}
+
+<EditForm Model="Input" OnValidSubmit="RegisterUser" FormName="register">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <InputText @bind-Value="Input.Email" class="form-control" />
+        <ValidationMessage For="() => Input.Email" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <InputText @bind-Value="Input.Password" type="password" class="form-control" />
+        <ValidationMessage For="() => Input.Password" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Confirmar Contraseña</label>
+        <InputText @bind-Value="Input.ConfirmPassword" type="password" class="form-control" />
+        <ValidationMessage For="() => Input.ConfirmPassword" />
+    </div>
+    <button type="submit" class="btn btn-primary">Registrarse</button>
+    <a href="/Account/Login" class="ms-3">¿Ya tienes cuenta? Inicia sesión</a>
+</EditForm>
+
+@code {
+    private List<string> errors = new();
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    private async Task RegisterUser()
+    {
+        var user = new IdentityUser { UserName = Input.Email, Email = Input.Email };
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (result.Succeeded)
+        {
+            await SignInManager.SignInAsync(user, isPersistent: false);
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            errors = result.Errors.Select(e => e.Description).ToList();
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "El email es requerido")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "La contraseña es requerida")]
+        [MinLength(8, ErrorMessage = "Mínimo 8 caracteres")]
+        public string Password { get; set; } = "";
+
+        [Required(ErrorMessage = "Confirma tu contraseña")]
+        [Compare("Password", ErrorMessage = "Las contraseñas no coinciden")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+}
