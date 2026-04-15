@@ -1,6 +1,8 @@
 using CleanHome.Components;
 using CleanHome.DAL;
 using CleanHome.Services;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,10 +11,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-//Obtener cadena de conexion para la bd 
-var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
-//Inyectar el contexto
-builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(ConStr));
+//inyecta contexto
+builder.Services.AddDbContext<Contexto>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlConStr")));
+
+//servicios identity
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.SignIn.RequireConfirmedAccount = true; //para emil confirmation
+})
+.AddEntityFrameworkStores<Contexto>()
+.AddDefaultTokenProviders();
+
+builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+
+//inyecta servicios del sistema
 builder.Services.AddScoped<OrdenCompraService>();
 builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<EmpleadoService>();
@@ -38,6 +53,13 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
+app.UseRouting();  
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAntiforgery();
 
