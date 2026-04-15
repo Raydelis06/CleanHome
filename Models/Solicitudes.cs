@@ -9,7 +9,7 @@ namespace CleanHome.Models
 
         [Required(ErrorMessage = "El cliente es obligatorio")]
         [StringLength(100, ErrorMessage = "Máximo 100 caracteres")]
-        public string Cliente { get; set; } = string.Empty;
+        public int ClienteId { get; set; }
 
         [Required(ErrorMessage = "La descripción es obligatoria")]
         [StringLength(300, ErrorMessage = "Máximo 300 caracteres")]
