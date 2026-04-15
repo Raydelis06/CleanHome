@@ -49,7 +49,7 @@ namespace CleanHome.Services
         public async Task<bool> Recuperar(SolicitudDTO solicitud)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            solicitud.EstaInactiva = Estados.Inactivo;
+            solicitud.EstaInactiva = Estados.Activo;
             contexto.Solicitudes.Update(solicitud);
             return await contexto.SaveChangesAsync() > 0;
         }

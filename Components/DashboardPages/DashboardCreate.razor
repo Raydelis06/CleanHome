@@ -10,7 +10,7 @@
 
 
 <PageTitle>Crear Solicitud</PageTitle>
-<EditForm Model="nuevaSolicitud" OnValidSubmit="Guardar">
+<EditForm Model="nuevaSolicitud" OnValidSubmit="Guardar" FormName="CrearSolicitudForm">
     <DataAnnotationsValidator />
     <div class="container py-4">
         <h2 class="mb-4">Crear Nueva Solicitud</h2>
@@ -54,11 +54,11 @@
             </div>
 
             <div class="d-flex gap-2 mt-3">
-                <button class="btn btn-primary px-4 bi bi-save" @onclick="Guardar">
+                <button class="btn btn-primary px-4 bi bi-save" type="submit">
                     Guardar
                 </button>
 
-                <button class="btn btn-secondary px-4 bi bi-trash" @onclick="Cancelar">
+                <button class="btn btn-secondary px-4 bi bi-trash" type="button" @onclick="Cancelar">
                     Cancelar
                 </button>
             </div>
@@ -70,28 +70,35 @@
 @code {
     private SolicitudDTO nuevaSolicitud = new SolicitudDTO();
     private List<Clientes> ListaClientes = new();
-    
 
-    private DateTime fechaInput = DateTime.Now;
     protected override async Task OnInitializedAsync()
     {
+        nuevaSolicitud.Fecha = DateTime.Now;
         nuevaSolicitud.Estado = EstadoSolicitud.Pendiente;
-        ListaClientes = await clienteService.Listar(p => p.Estado == Estados.Activo);
+        nuevaSolicitud.EstaInactiva = Estados.Activo;
+        ListaClientes = await clienteService.Listar(p => p.Estado == Estados.Activo && p.ClienteId > 0);
 
     }
     private async Task Guardar()
     {
-        var creada = await solicitudService.Guardar(nuevaSolicitud);
-        if (creada)
+        try
         {
-            toastService.ShowSuccess("La solicitud ha sido creada con exito");
-        }
-        else
+            var creada = await solicitudService.Guardar(nuevaSolicitud);
+            if (creada)
+            {
+                toastService.ShowSuccess("La solicitud ha sido creada con exito");
+            }
+            else
+            {
+                toastService.ShowError("Ha ocurrido un error al intentar crear la solicitud.");
+
+            }
+            navManager.NavigateTo("/");
+        }catch(Exception e)
         {
-            toastService.ShowError("Ha ocurrido un error al intentar crear la solicitud.");
-            
+            Console.WriteLine(e.Message);
         }
-        navManager.NavigateTo("/");
+
     }
 
     private void Cancelar()
