@@ -1,9 +1,11 @@
 ﻿using CleanHome.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CleanHome.DAL
 {
-    public class Contexto : DbContext
+    public class Contexto : IdentityDbContext<IdentityUser>
     {
         public Contexto(DbContextOptions<Contexto> options) : base(options)
         {
