@@ -1,14 +1,14 @@
 ﻿@page "/Account/Register"
+
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
+@layout AuthLayout
 @attribute [AllowAnonymous]
 @inject UserManager<IdentityUser> UserManager
 @inject SignInManager<IdentityUser> SignInManager
 @inject NavigationManager Navigation
 
 <PageTitle>Registrarse</PageTitle>
-
-<h3>Crear Cuenta</h3>
 
 @if (errors.Any())
 {
@@ -20,26 +20,34 @@
     </div>
 }
 
-<EditForm Model="Input" OnValidSubmit="RegisterUser" FormName="register">
-    <DataAnnotationsValidator />
-    <div class="mb-3">
-        <label class="form-label">Email</label>
-        <InputText @bind-Value="Input.Email" class="form-control" />
-        <ValidationMessage For="() => Input.Email" />
+<div class="auth-wrapper">
+    <div class="glass-box">
+        <div class="profile-circle"></div>
+        <h2 class="auth-title">REGISTRO</h2>
+        <EditForm Model="Input" OnValidSubmit="RegisterUser" FormName="register" method="post">
+            <DataAnnotationsValidator />
+            <div class="input-field">
+                <InputText @bind-Value="Input.Email" class="form-control-clean" placeholder="Email" />
+                <i class="bi bi-envelope"></i>
+                <ValidationMessage For="() => Input.Email" class="error-text" />
+            </div>
+            <div class="input-field">
+                <InputText @bind-Value="Input.Password" type="password" class="form-control-clean" placeholder="Contraseña" />
+                <i class="bi bi-lock"></i>
+                <ValidationMessage For="() => Input.Password" class="error-text" />
+            </div>
+            <div class="input-field">
+                <InputText @bind-Value="Input.ConfirmPassword" type="password" class="form-control-clean" placeholder="Confirmar Contraseña" />
+                <i class="bi bi-shield-check"></i>
+                <ValidationMessage For="() => Input.ConfirmPassword" class="error-text" />
+            </div>
+            <button type="submit" class="btn-submit">Registrarse</button>
+            <div class="auth-footer mt-4">
+                <a href="/Account/Login">¿Ya tienes cuenta? Inicia sesión</a>
+            </div>
+        </EditForm>
     </div>
-    <div class="mb-3">
-        <label class="form-label">Contraseña</label>
-        <InputText @bind-Value="Input.Password" type="password" class="form-control" />
-        <ValidationMessage For="() => Input.Password" />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Confirmar Contraseña</label>
-        <InputText @bind-Value="Input.ConfirmPassword" type="password" class="form-control" />
-        <ValidationMessage For="() => Input.ConfirmPassword" />
-    </div>
-    <button type="submit" class="btn btn-primary">Registrarse</button>
-    <a href="/Account/Login" class="ms-3">¿Ya tienes cuenta? Inicia sesión</a>
-</EditForm>
+</div>
 
 @code {
     private List<string> errors = new();
