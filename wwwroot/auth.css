@@ -24,13 +24,16 @@
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
-
 .profile-circle {
-    width: 70px;
-    height: 70px;
-    background: rgba(200, 200, 200, 0.4);
-    border-radius: 50%;
-    margin: 0 auto 25px auto;
+    width: 55px; 
+    height: 55px;
+    background-image: url('../images/logo-cleanhome.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0 auto 10px; 
+    border: none;
+    opacity: 0.85;
 }
 
 .auth-title {

@@ -5,7 +5,7 @@
 @inject RoleManager<IdentityRole> RoleManager
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
-@attribute [Authorize(Roles = "Admin")]
+@* @attribute [Authorize(Roles = "Admin")] *@
 
 <PageTitle>Gestión de Usuarios</PageTitle>
 
@@ -79,7 +79,14 @@
                                 }
                             </td>
                             <td class="text-center">
-                                <a href="@($"/Usuarios/Editar/{item.Id}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                                @if (item.Rol != "Admin")
+                                {
+                                    <a href="@($"/Usuarios/Editar/{item.Id}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                                }
+                                else
+                                {
+                                    <span class="bi bi-shield-lock-fill text-muted" title="Administrador protegido"></span>
+                                }
                             </td>
                         </tr>
                     }

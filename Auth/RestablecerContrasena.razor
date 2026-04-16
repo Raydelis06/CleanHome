@@ -1,0 +1,157 @@
+﻿@page "/Account/RestablecerContrasena"
+@using System.ComponentModel.DataAnnotations
+@using CleanHome.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity.UI.Services
+@using CleanHome.Components.Layout
+
+@layout AuthLayout
+@attribute [AllowAnonymous]
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
+@inject IEmailSender EmailSender
+
+<PageTitle>Restablecer Contraseña</PageTitle>
+
+<div class="auth-wrapper">
+    <div class="glass-box">
+        <div class="profile-circle"></div>
+        <h2 class="auth-title">NUEVA CONTRASEÑA</h2>
+
+        @if (!string.IsNullOrEmpty(mensajeExito))
+        {
+            <div class="alert alert-success custom-alert mb-3">
+                <p class="mb-0 small">@mensajeExito</p>
+            </div>
+            <div class="auth-footer mt-3">
+                <a href="/Account/Login">Ir al Login</a>
+            </div>
+        }
+        else
+        {
+            @if (errors.Any())
+            {
+                <div class="alert alert-danger custom-alert mb-3">
+                    @foreach (var error in errors)
+                    {
+                        <p class="mb-0 small">@error</p>
+                    }
+                </div>
+            }
+
+            <EditForm Model="Input" OnValidSubmit="CambiarContrasena" FormName="reset" autocomplete="off">
+                <DataAnnotationsValidator />
+
+                <div class="input-field">
+                    <InputText @bind-value="Input.Email" class="form-control-clean" placeholder="Email" />
+                    <i class="bi bi-envelope"></i>
+                    <ValidationMessage For="() => Input.Email" class="error-text" />
+                </div>
+
+                <div class="input-field">
+                    <InputText @bind-value="Input.NuevaContrasena" type="password" class="form-control-clean" placeholder="Nueva Contraseña" />
+                    <i class="bi bi-lock"></i>
+                    <ValidationMessage For="() => Input.NuevaContrasena" class="error-text" />
+                </div>
+
+                <div class="input-field">
+                    <InputText @bind-value="Input.ConfirmarContrasena" type="password" class="form-control-clean" placeholder="Confirmar Contraseña" />
+                    <i class="bi bi-shield-check"></i>
+                    <ValidationMessage For="() => Input.ConfirmarContrasena" class="error-text" />
+                </div>
+
+                <button type="submit" class="btn-submit" disabled="@procesando">
+                    @if (procesando)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+                    Guardar Contraseña
+                </button>
+
+                <div class="auth-footer mt-4">
+                    <a href="/Account/Login">Volver al Login</a>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    private List<string> errors = new();
+    private string mensajeExito = string.Empty;
+    private bool procesando = false;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? email { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Pre-llenar email si viene por query string desde el Login
+        if (!string.IsNullOrEmpty(email))
+            Input.Email = email;
+    }
+
+    private async Task CambiarContrasena()
+    {
+        errors.Clear();
+        procesando = true;
+
+        try
+        {
+            var user = await UserManager.FindByEmailAsync(Input.Email);
+
+            if (user == null || !await UserManager.IsEmailConfirmedAsync(user))
+            {
+                errors.Add("No se encontró una cuenta confirmada con ese email.");
+                return;
+            }
+
+            // Quitar contraseña actual y poner la nueva
+            var token = await UserManager.GeneratePasswordResetTokenAsync(user);
+            var result = await UserManager.ResetPasswordAsync(user, token, Input.NuevaContrasena);
+
+            if (result.Succeeded)
+            {
+                // Notificar al usuario por email
+                await EmailSender.SendEmailAsync(
+                    user.Email!,
+                    "Contraseña actualizada - CleanHome",
+                    $"<h3>CleanHome - Contraseña actualizada</h3>" +
+                    $"<p>Tu contraseña ha sido restablecida exitosamente.</p>" +
+                    $"<p>Si no realizaste este cambio, contacta al administrador de inmediato.</p>"
+                );
+
+                mensajeExito = "¡Contraseña actualizada! Revisa tu email y ya puedes iniciar sesión.";
+            }
+            else
+            {
+                errors = result.Errors.Select(e => e.Description).ToList();
+            }
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "El email es requerido")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "La contraseña es requerida")]
+        [MinLength(8, ErrorMessage = "Mínimo 8 caracteres")]
+        public string NuevaContrasena { get; set; } = "";
+
+        [Required(ErrorMessage = "Confirma tu contraseña")]
+        [Compare("NuevaContrasena", ErrorMessage = "Las contraseñas no coinciden")]
+        public string ConfirmarContrasena { get; set; } = "";
+    }
+}

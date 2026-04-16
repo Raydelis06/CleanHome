@@ -37,6 +37,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 {
     options.SignIn.RequireConfirmedEmail = true;
 });
+builder.Services.AddCascadingAuthenticationState();
 
 //inyecta servicios del sistema
 builder.Services.AddScoped<OrdenCompraService>();
