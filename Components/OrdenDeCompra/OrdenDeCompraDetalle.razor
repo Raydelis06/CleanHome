@@ -8,6 +8,8 @@
 @inject OrdenCompraService ordenService
 @inject NavigationManager navegar
 @inject ToastService toastService
+@attribute [Authorize(Roles = "Admin")]
+
 
 <PageTitle>Detalle de Orden</PageTitle>
 

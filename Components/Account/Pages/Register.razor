@@ -1,0 +1,203 @@
+﻿@page "/Account/Register"
+@using System.ComponentModel.DataAnnotations
+@using CleanHome.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity.UI.Services
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Text
+@layout AuthLayout
+@attribute [AllowAnonymous]
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager Navigation
+@inject IEmailSender EmailSender
+
+<PageTitle>Registrarse</PageTitle>
+
+<div class="auth-wrapper">
+    <div class="glass-box">
+        <div class="text-center mb-4">
+            <img src="/Images/icon.png" alt="Logo CleanHome" style="width: 120px; height: auto;" />
+        </div>
+        <h2 class="auth-title">REGISTRO</h2>
+
+        @if (errors.Any())
+        {
+            <div class="alert alert-danger custom-alert mb-3">
+                @foreach (var error in errors)
+                {
+                    <p class="mb-0 small">@error</p>
+                }
+            </div>
+        }
+
+        @* Usuario ya existe y está confirmado *@
+        @if (usuarioYaConfirmado)
+        {
+            <div class="alert alert-warning custom-alert mb-3">
+                <p class="mb-0 small">Este email ya tiene una cuenta registrada. <a href="/Account/Login">Inicia sesión</a>.</p>
+            </div>
+        }
+
+        @* Usuario existe pero sin confirmar - reenviar correo *@
+        @if (mostrarReenvio)
+        {
+            <div class="alert alert-info custom-alert mb-3">
+                <p class="mb-1 small">Este email ya está registrado pero aún no confirmado.</p>
+                @if (reenvioExitoso)
+                {
+                    <p class="mb-0 small text-success"><strong>✓ Correo reenviado. Revisa tu bandeja.</strong></p>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-sm btn-outline-info mt-1" @onclick="ReenviarConfirmacion">
+                        <span class="bi bi-envelope-arrow-up me-1"></span> Reenviar correo de confirmación
+                    </button>
+                }
+            </div>
+        }
+
+        <EditForm Model="Input" OnValidSubmit="RegisterUser" FormName="register" method="post" autocomplete="off">
+            <DataAnnotationsValidator />
+
+            <div class="input-field">
+                <InputText @bind-Value="Input.Email" class="form-control-clean" placeholder="Email" />
+                <i class="bi bi-envelope"></i>
+                <ValidationMessage For="() => Input.Email" class="error-text" />
+            </div>
+
+            <div class="input-field">
+                <InputText @bind-Value="Input.Password" type="password" class="form-control-clean" placeholder="Contraseña" />
+                <i class="bi bi-lock"></i>
+                <ValidationMessage For="() => Input.Password" class="error-text" />
+            </div>
+
+            <div class="input-field">
+                <InputText @bind-Value="Input.ConfirmPassword" type="password" class="form-control-clean" placeholder="Confirmar Contraseña" />
+                <i class="bi bi-shield-check"></i>
+                <ValidationMessage For="() => Input.ConfirmPassword" class="error-text" />
+            </div>
+
+            <button type="submit" class="btn-submit">Registrarse</button>
+
+            <div class="auth-footer mt-4">
+                <a href="/Account/Login">¿Ya tienes cuenta? Inicia sesión</a>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private List<string> errors = new();
+    private bool mostrarReenvio = false;
+    private bool usuarioYaConfirmado = false;
+    private bool reenvioExitoso = false;
+    private string emailParaReenvio = string.Empty;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    private async Task RegisterUser()
+    {
+        errors.Clear();
+        mostrarReenvio = false;
+        usuarioYaConfirmado = false;
+        reenvioExitoso = false;
+
+        // Verificar si el usuario ya existe
+        var usuarioExistente = await UserManager.FindByEmailAsync(Input.Email);
+
+        if (usuarioExistente != null)
+        {
+            if (await UserManager.IsEmailConfirmedAsync(usuarioExistente))
+            {
+                // Está registrado y confirmado
+                usuarioYaConfirmado = true;
+            }
+            else
+            {
+                // Está registrado pero sin confirmar
+                emailParaReenvio = Input.Email;
+                mostrarReenvio = true;
+            }
+            return;
+        }
+
+        // Crear nuevo usuario
+        var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email };
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (result.Succeeded)
+        {
+            await UserManager.AddToRoleAsync(user, "Empleado");
+            var token = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            var confirmationLink = Navigation.GetUriWithQueryParameters(
+                Navigation.ToAbsoluteUri("/confirmar-email").AbsoluteUri,
+                new Dictionary<string, object?>
+                {
+                    ["userId"] = user.Id,
+                    ["token"] = encodedToken
+                });
+
+            await EmailSender.SendEmailAsync(
+                Input.Email,
+                "Confirma tu cuenta - CleanHome",
+                $"<h3>Bienvenido a CleanHome</h3>" +
+                $"<p>Por favor confirma tu cuenta haciendo clic en el siguiente enlace:</p>" +
+                $"<a href='{confirmationLink}'>Confirmar Email</a>"
+            );
+
+            Navigation.NavigateTo("/email-pendiente");
+        }
+        else
+        {
+            errors = result.Errors.Select(e => e.Description).ToList();
+        }
+    }
+
+    private async Task ReenviarConfirmacion()
+    {
+        var user = await UserManager.FindByEmailAsync(emailParaReenvio);
+        if (user == null) return;
+
+        var token = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+        var confirmationLink = Navigation.GetUriWithQueryParameters(
+            Navigation.ToAbsoluteUri("/confirmar-email").AbsoluteUri,
+            new Dictionary<string, object?>
+            {
+                ["userId"] = user.Id,
+                ["token"] = encodedToken
+            });
+
+        await EmailSender.SendEmailAsync(
+            user.Email!,
+            "Confirma tu cuenta - CleanHome",
+            $"<h3>CleanHome - Reenvío de confirmación</h3>" +
+            $"<p>Haz clic en el enlace para confirmar tu cuenta:</p>" +
+            $"<a href='{confirmationLink}'>Confirmar Email</a>"
+        );
+
+        reenvioExitoso = true;
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "El email es requerido")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "La contraseña es requerida")]
+        [MinLength(8, ErrorMessage = "Mínimo 8 caracteres")]
+        public string Password { get; set; } = "";
+
+        [Required(ErrorMessage = "Confirma tu contraseña")]
+        [Compare("Password", ErrorMessage = "Las contraseñas no coinciden")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+}

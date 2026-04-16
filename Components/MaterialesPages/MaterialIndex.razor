@@ -4,6 +4,10 @@
 @inject MaterialService materialService;
 @inject ProveedorService proveedorService;
 @page "/Materiales"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
+
 <PageTitle>Registro de Materiales</PageTitle>
 <div class="container">
     <div class="card shadow-lg">

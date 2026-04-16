@@ -7,6 +7,8 @@
 @inject ToastService toastService
 @inject ServicioService servicioService
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
 
 <PageTitle>Crear tipo de servicio</PageTitle>
 

@@ -6,6 +6,8 @@
 @inject NavigationManager navegar
 @inject ToastService toastService
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
 
 <PageTitle>Editar tipo de servicio</PageTitle>
 

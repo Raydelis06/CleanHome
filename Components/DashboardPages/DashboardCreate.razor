@@ -6,6 +6,8 @@
 @inject NavigationManager navManager
 @inject ToastService toastService
 @inject ClienteService clienteService
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin, Empleado")]
 
 
 

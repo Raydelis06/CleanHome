@@ -7,6 +7,8 @@
 @inject ToastService toastService
 @page "/Materiales/Editar_Material/{Id:int}"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
 
 <PageTitle>Editar Material</PageTitle>
 

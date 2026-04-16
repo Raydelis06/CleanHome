@@ -6,6 +6,7 @@
 @inject ToastService toastService
 @page "/Clientes/Editar_Cliente/{Id:int}"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin, Empleado")]
 
 <PageTitle>Editar Cliente</PageTitle>
 

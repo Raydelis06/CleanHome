@@ -9,6 +9,8 @@
 @inject ToastService toastService
 @page "/Propiedades/Editar_Propiedad/{Id:int}"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin, Empleado")]
+
 
 <PageTitle>Editar Propiedad</PageTitle>
 <EditForm Model="propiedad" OnValidSubmit="Guardar">

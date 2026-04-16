@@ -7,6 +7,8 @@
 @inject ToastService toastService
 @page "/Materiales/Crear_Material"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
 
 <PageTitle>Crear Material</PageTitle>
 <EditForm Model="material" OnValidSubmit="Guardar">

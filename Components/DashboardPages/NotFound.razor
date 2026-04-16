@@ -1,5 +1,6 @@
 ﻿@page "/not-found"
 @layout MainLayout
-
-<h3>En construccion</h3>
-<p>Contenido en proceso de desarrollo...</p>
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
+<h3>Pagina no autorizada</h3>
+<p>Usted no tiene permiso para acceder a este servicio...</p>

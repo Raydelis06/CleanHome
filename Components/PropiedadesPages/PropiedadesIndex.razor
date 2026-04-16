@@ -3,6 +3,9 @@
 @inject PropiedadService propiedadService;
 @inject ClienteService clienteService;
 @inject TiposPropiedadService TiposPropiedadService;
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin, Empleado")]
+
 
 @page "/Propiedades"
 <PageTitle>Registro de Propiedades</PageTitle>

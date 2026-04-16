@@ -3,6 +3,9 @@
 @using CleanHome.Services
 @inject EmpleadoService empleadoService;
 @page "/Empleados"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
 <PageTitle>Registro de Empleados</PageTitle>
 <div class="container">
     <div class="card shadow-lg">

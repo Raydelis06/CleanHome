@@ -1,0 +1,110 @@
+﻿/* wwwroot/css/auth.css */
+
+.auth-wrapper {
+    background: url('/Images/background_auth.png') no-repeat center center fixed;
+    background-size: cover;
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999; /* Asegura que cubra el layout */
+}
+
+.glass-box {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    padding: 50px 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.profile-circle {
+    width: 55px; 
+    height: 55px;
+    background-image: url('../images/logo-cleanhome.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0 auto 10px; 
+    border: none;
+    opacity: 0.85;
+}
+
+.auth-title {
+    color: #333;
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+}
+
+.input-field {
+    position: relative;
+    border-bottom: 1.5px solid #444;
+    margin-bottom: 2rem;
+}
+
+.input-field i {
+    position: absolute;
+    right: 5px;
+    top: 12px;
+    color: #444;
+}
+
+.btn-submit {
+    background-color: #3d70b2;
+    color: white;
+    width: 100%;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+    .btn-submit:hover {
+        background-color: #2e5a91;
+    }
+
+.auth-footer a {
+    color: #444;
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+.form-control-clean {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    /* MODIFICACIÓN AQUÍ: */
+    padding: 10px 35px 10px 12px !important; /* El cuarto valor (12px) es el espacio de la izquierda */
+
+    color: #222 !important;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+/* También ajustamos el texto de error para que se alinee con el nuevo margen del input */
+.error-text {
+    color: #dc3545;
+    font-size: 0.75rem;
+    display: block;
+    text-align: left;
+    margin-top: 8px;
+    /* MODIFICACIÓN AQUÍ: */
+    padding-left: 12px; /* Alineado con el padding del input */
+
+    font-weight: 500;
+}
+.input-field .invalid {
+    border-bottom: 2px solid #dc3545 !important;
+    transition: border-bottom 0.3s ease;
+}

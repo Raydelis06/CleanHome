@@ -1,0 +1,172 @@
+﻿@page "/Account/Login"
+@using CleanHome.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity.UI.Services
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Text
+@using System.ComponentModel.DataAnnotations
+@attribute [AllowAnonymous]
+@layout AuthLayout
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager Navigation
+@inject ILogger<Login> Logger
+@inject UserManager<ApplicationUser> userManager
+@inject IEmailSender EmailSender
+
+<PageTitle>Iniciar Sesión</PageTitle>
+
+<div class="auth-wrapper">
+    <div class="glass-box">
+        <div class="text-center mb-4">
+            <img src="/Images/icon.png" alt="Logo CleanHome" style="width: 120px; height: auto;" />
+        </div>
+        <h2 class="auth-title">LOGIN</h2>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger custom-alert mb-3">
+                <p class="mb-0 small">@errorMessage</p>
+            </div>
+        }
+
+        @* Caso: email no confirmado - mostrar botón de reenvío *@
+        @if (mostrarReenvioConfirmacion)
+        {
+            <div class="alert alert-warning custom-alert mb-3">
+                <p class="mb-1 small">Tu email aún no ha sido confirmado.</p>
+                @if (reenvioExitoso)
+                {
+                    <p class="mb-0 small text-success"><strong>✓ Correo reenviado. Revisa tu bandeja.</strong></p>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-sm btn-outline-warning mt-1" @onclick="ReenviarConfirmacion">
+                        <span class="bi bi-envelope-arrow-up me-1"></span> Reenviar correo de confirmación
+                    </button>
+                }
+            </div>
+        }
+
+        @* Caso: contraseña incorrecta - mostrar enlace a restablecer *@
+        @if (mostrarEnlaceReset)
+        {
+            <div class="alert alert-info custom-alert mb-3">
+                <p class="mb-1 small">¿Olvidaste tu contraseña?</p>
+                <a href="/Account/RestablecerContrasena?email=@Uri.EscapeDataString(Input.Email)" class="btn btn-sm btn-outline-info mt-1">
+                    <span class="bi bi-key me-1"></span> Restablecer contraseña
+                </a>
+            </div>
+        }
+
+        <EditForm Model="Input" OnValidSubmit="LoginUser" FormName="login" method="post" autocomplete="off">
+            <DataAnnotationsValidator />
+            <div class="input-field">
+                <InputText @bind-Value="Input.Email" class="form-control-clean" placeholder="Email" />
+                <i class="bi bi-envelope"></i>
+                <ValidationMessage For="() => Input.Email" class="error-text" />
+            </div>
+            <div class="input-field">
+                <InputText @bind-Value="Input.Password" type="password" class="form-control-clean" placeholder="Password" />
+                <i class="bi bi-incognito"></i>
+                <ValidationMessage For="() => Input.Password" class="error-text" />
+            </div>
+            <button type="submit" class="btn-submit">Login</button>
+            <div class="auth-footer mt-4">
+                <a href="/Account/Register">¿No tienes cuenta? Regístrate</a>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private string? errorMessage;
+    private bool mostrarReenvioConfirmacion = false;
+    private bool mostrarEnlaceReset = false;
+    private bool reenvioExitoso = false;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private async Task LoginUser()
+    {
+        // Resetear estados
+        errorMessage = null;
+        mostrarReenvioConfirmacion = false;
+        mostrarEnlaceReset = false;
+        reenvioExitoso = false;
+
+        var user = await userManager.FindByEmailAsync(Input.Email);
+
+        // Usuario no existe
+        if (user == null)
+        {
+            errorMessage = "Email o contraseña incorrectos.";
+            return;
+        }
+
+        // Usuario existe pero no confirmado
+        if (!await userManager.IsEmailConfirmedAsync(user))
+        {
+            errorMessage = "Debes confirmar tu email antes de iniciar sesión.";
+            mostrarReenvioConfirmacion = true;
+            return;
+        }
+
+        // Usuario confirmado - intentar login
+        var result = await SignInManager.PasswordSignInAsync(
+            Input.Email, Input.Password, false, lockoutOnFailure: false);
+
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("Usuario autenticado.");
+            Navigation.NavigateTo(ReturnUrl ?? "/Dashboard");
+        }
+        else
+        {
+            // Contraseña incorrecta - ofrecer restablecer
+            errorMessage = "Contraseña incorrecta.";
+            mostrarEnlaceReset = true;
+        }
+    }
+
+    private async Task ReenviarConfirmacion()
+    {
+        var user = await userManager.FindByEmailAsync(Input.Email);
+        if (user == null) return;
+
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+        var confirmationLink = Navigation.GetUriWithQueryParameters(
+            Navigation.ToAbsoluteUri("/confirmar-email").AbsoluteUri,
+            new Dictionary<string, object?>
+            {
+                ["userId"] = user.Id,
+                ["token"] = encodedToken
+            });
+
+        await EmailSender.SendEmailAsync(
+            user.Email!,
+            "Confirma tu cuenta - CleanHome",
+            $"<h3>CleanHome - Reenvío de confirmación</h3>" +
+            $"<p>Haz clic en el enlace para confirmar tu cuenta:</p>" +
+            $"<a href='{confirmationLink}'>Confirmar Email</a>"
+        );
+
+        reenvioExitoso = true;
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "El email es requerido")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "La contraseña es requerida")]
+        public string Password { get; set; } = "";
+    }
+}

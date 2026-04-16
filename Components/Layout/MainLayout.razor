@@ -1,4 +1,7 @@
-﻿@inherits LayoutComponentBase
+﻿@using CleanHome.DAL
+@using Microsoft.AspNetCore.Components.Authorization
+@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthStateProvider
 
 <Toasts class="p-3" AutoHide="true" StackLength="3" Placement="ToastsPlacement.TopRight" />
 
@@ -8,7 +11,21 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
+        <div class="top-row px-4 d-flex justify-content-end align-items-center gap-3">
+            @if (userName != null)
+            {
+                <span class="user-email-display text-black-50 small ">
+                    <i class="bi bi-person-circle"></i> @userName
+                </span>
+            }
+
+            <form action="Account/Logout" method="post" @formname="logout-form">
+                <AntiforgeryToken />
+                <button type="submit" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Salir</span>
+                </button>
+            </form>
         </div>
         <article class="content px-4">
             @Body
@@ -21,3 +38,18 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private string? userName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            userName = user.Identity.Name;
+        }
+    }
+}
