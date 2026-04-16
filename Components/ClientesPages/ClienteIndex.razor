@@ -3,6 +3,8 @@
 @inject ClienteService clienteService;
 @page "/Clientes"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin, Empleado")]
+
 
 <PageTitle>Registro de Cliente</PageTitle>
 <div class="container">

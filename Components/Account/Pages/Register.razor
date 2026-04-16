@@ -1,47 +1,60 @@
 ﻿@page "/Account/Register"
-
+@using System.ComponentModel.DataAnnotations
+@using CleanHome.Auth
+@using CleanHome.Models
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity.UI.Services
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Text
 @layout AuthLayout
 @attribute [AllowAnonymous]
 @inject UserManager<IdentityUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
 @inject SignInManager<IdentityUser> SignInManager
 @inject NavigationManager Navigation
+@inject IEmailSender EmailSender
 
 <PageTitle>Registrarse</PageTitle>
-
-@if (errors.Any())
-{
-    <div class="alert alert-danger">
-        @foreach (var error in errors)
-        {
-            <p>@error</p>
-        }
-    </div>
-}
 
 <div class="auth-wrapper">
     <div class="glass-box">
         <div class="profile-circle"></div>
         <h2 class="auth-title">REGISTRO</h2>
-        <EditForm Model="Input" OnValidSubmit="RegisterUser" FormName="register" method="post">
+
+        @if (errors.Any())
+        {
+            <div class="alert alert-danger custom-alert mb-3">
+                @foreach (var error in errors)
+                {
+                    <p class="mb-0 small">@error</p>
+                }
+            </div>
+        }
+
+        <EditForm Model="Input" OnValidSubmit="RegisterUser" FormName="register" method="post" autocomplete="off">
             <DataAnnotationsValidator />
+            
             <div class="input-field">
                 <InputText @bind-Value="Input.Email" class="form-control-clean" placeholder="Email" />
                 <i class="bi bi-envelope"></i>
                 <ValidationMessage For="() => Input.Email" class="error-text" />
             </div>
+
             <div class="input-field">
                 <InputText @bind-Value="Input.Password" type="password" class="form-control-clean" placeholder="Contraseña" />
                 <i class="bi bi-lock"></i>
                 <ValidationMessage For="() => Input.Password" class="error-text" />
             </div>
+
             <div class="input-field">
                 <InputText @bind-Value="Input.ConfirmPassword" type="password" class="form-control-clean" placeholder="Confirmar Contraseña" />
                 <i class="bi bi-shield-check"></i>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="error-text" />
             </div>
+
             <button type="submit" class="btn-submit">Registrarse</button>
+            
             <div class="auth-footer mt-4">
                 <a href="/Account/Login">¿Ya tienes cuenta? Inicia sesión</a>
             </div>
@@ -57,17 +70,36 @@
 
     private async Task RegisterUser()
     {
-        var user = new IdentityUser { UserName = Input.Email, Email = Input.Email };
+        errors.Clear();
+        var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email };
         var result = await UserManager.CreateAsync(user, Input.Password);
 
         if (result.Succeeded)
         {
-            await SignInManager.SignInAsync(user, isPersistent: false);
-            Navigation.NavigateTo("/");
-        }
-        else
-        {
-            errors = result.Errors.Select(e => e.Description).ToList();
+            // Generar token de confirmación
+            var token = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            // Construir el enlace
+            var confirmationLink = Navigation.GetUriWithQueryParameters(
+                Navigation.ToAbsoluteUri("/confirmar-email").AbsoluteUri,
+                new Dictionary<string, object?>
+                {
+                    ["userId"] = user.Id,
+                    ["token"] = encodedToken
+                });
+
+            // Enviar email
+            await EmailSender.SendEmailAsync(
+                Input.Email,
+                "Confirma tu cuenta - CleanHome",
+                $"<h3>Bienvenido a CleanHome</h3>" +
+                $"<p>Por favor confirma tu cuenta haciendo clic en el siguiente enlace:</p>" +
+                $"<a href='{confirmationLink}'>Confirmar Email</a>"
+            );
+
+            // Redirigir a página de aviso
+            Navigation.NavigateTo("/email-pendiente");
         }
     }
 

@@ -1,5 +1,6 @@
 @page "/Facturacion/Crear"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin, Empleado")]
 
 @using CleanHome.Extensions
 @using CleanHome.Models

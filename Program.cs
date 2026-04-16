@@ -1,10 +1,12 @@
+using CleanHome.Auth;
 using CleanHome.Components;
 using CleanHome.DAL;
+using CleanHome.Models;
 using CleanHome.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,16 +19,25 @@ builder.Services.AddDbContextFactory<Contexto>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlConStr")));
 
 //servicios identity
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
-    options.SignIn.RequireConfirmedAccount = true; //para emil confirmation
+    options.SignIn.RequireConfirmedEmail = true;
 })
 .AddEntityFrameworkStores<Contexto>()
+.AddRoles<IdentityRole>()
 .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
+// Asegúrate que Identity requiera email confirmado
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.SignIn.RequireConfirmedEmail = true;
+});
 
 //inyecta servicios del sistema
 builder.Services.AddScoped<OrdenCompraService>();
@@ -67,5 +78,16 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapGet("/", (HttpContext context) =>
+{
+    if (!context.User.Identity?.IsAuthenticated ?? true)
+    {
+        return Results.Redirect("/Account/Login");
+    }
+    return Results.Redirect("/Dashboard"); 
+});
+
+app.Run();
 
 app.Run();

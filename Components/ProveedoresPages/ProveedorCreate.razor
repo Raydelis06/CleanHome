@@ -6,6 +6,8 @@
 @inject ToastService toastService
 @page "/Proveedores/Crear_Proveedor"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
 
 <PageTitle>Crear Proveedor</PageTitle>
 <EditForm Model="proveedor" OnValidSubmit="Guardar">

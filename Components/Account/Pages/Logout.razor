@@ -1,0 +1,22 @@
+﻿@page "/Account/Logout"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Mvc
+@attribute [IgnoreAntiforgeryToken]
+@inject SignInManager<IdentityUser> SignInManager
+@inject NavigationManager Navigation
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SignInManager.IsSignedIn(HttpContext.User))
+        {
+            await SignInManager.SignOutAsync();
+        }
+
+        // Redirigimos al Login inmediatamente después de cerrar sesión
+        Navigation.NavigateTo("Account/Login", forceLoad: true);
+    }
+}

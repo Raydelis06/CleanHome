@@ -6,6 +6,8 @@
 @inject ToastService toastService
 @page "/Empleados/Crear_Empleado"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
 
 <PageTitle>Crear Empleado</PageTitle>
 <EditForm Model="empleado" OnValidSubmit="Guardar">

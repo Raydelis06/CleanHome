@@ -7,6 +7,7 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject NavigationManager Navigation
 @inject ILogger<Login> Logger
+@inject UserManager<IdentityUser> userManager
 
 <PageTitle>Iniciar Sesión</PageTitle>
 
@@ -15,7 +16,7 @@
         <div class="profile-circle"></div>
         <h2 class="auth-title">LOGIN</h2>
 
-        <EditForm Model="Input" OnValidSubmit="LoginUser" FormName="login" method="post">
+        <EditForm Model="Input" OnValidSubmit="LoginUser" FormName="login" method="post" autocomplete="off">
             <DataAnnotationsValidator />
             <div class="input-field">
                 <InputText @bind-Value="Input.Email" class="form-control-clean" placeholder="Email" />
@@ -46,13 +47,21 @@
 
     private async Task LoginUser()
     {
+        var user = await userManager.FindByEmailAsync(Input.Email);
+
+        if (user != null && !await userManager.IsEmailConfirmedAsync(user))
+        {
+            errorMessage = "Debes confirmar tu email antes de iniciar sesión.";
+            return;
+        }
+
         var result = await SignInManager.PasswordSignInAsync(
             Input.Email, Input.Password, false, lockoutOnFailure: false);
 
         if (result.Succeeded)
         {
             Logger.LogInformation("Usuario autenticado.");
-            Navigation.NavigateTo(ReturnUrl ?? "/");
+            Navigation.NavigateTo(ReturnUrl ?? "/Dashboard");
         }
         else
         {

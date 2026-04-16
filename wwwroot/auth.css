@@ -48,16 +48,6 @@
     margin-bottom: 2rem;
 }
 
-.form-control-clean {
-    background: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    padding: 10px 35px 10px 0 !important;
-    color: #222 !important;
-    width: 100%;
-}
-
 .input-field i {
     position: absolute;
     right: 5px;
@@ -86,11 +76,32 @@
     text-decoration: none;
     font-size: 0.85rem;
 }
+.form-control-clean {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    /* MODIFICACIÓN AQUÍ: */
+    padding: 10px 35px 10px 12px !important; /* El cuarto valor (12px) es el espacio de la izquierda */
 
+    color: #222 !important;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+/* También ajustamos el texto de error para que se alinee con el nuevo margen del input */
 .error-text {
-    color: #b02a37;
+    color: #dc3545;
     font-size: 0.75rem;
     display: block;
     text-align: left;
-    margin-top: 5px;
+    margin-top: 8px;
+    /* MODIFICACIÓN AQUÍ: */
+    padding-left: 12px; /* Alineado con el padding del input */
+
+    font-weight: 500;
+}
+.input-field .invalid {
+    border-bottom: 2px solid #dc3545 !important;
+    transition: border-bottom 0.3s ease;
 }

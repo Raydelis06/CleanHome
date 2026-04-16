@@ -5,6 +5,8 @@
 
 @inject ProveedorService proveedorService;
 @page "/Proveedores"
+@attribute [Authorize(Roles = "Admin")]
+
 
 <PageTitle>Registro de Proveedores</PageTitle>
 <div class="container">

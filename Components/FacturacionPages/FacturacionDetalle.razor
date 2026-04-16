@@ -1,5 +1,6 @@
 @page "/Facturacion/Detalle/{FacturaId:int}"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin, Empleado")]
 
 @using CleanHome.Models
 @using CleanHome.Services

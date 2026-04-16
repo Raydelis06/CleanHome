@@ -10,6 +10,8 @@
 @inject MaterialService materialService
 @inject NavigationManager navegar
 @inject ToastService toastService
+@attribute [Authorize(Roles = "Admin")]
+
 
 <PageTitle>Editar Orden de Compra</PageTitle>
 

@@ -1,0 +1,64 @@
+﻿@page "/confirmar-email"
+@layout AuthLayout
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@using System.Text
+@using CleanHome.Models
+@using CleanHome.Components.Layout
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+
+<div class="container mt-5 text-center">
+    <div class="card shadow p-4 mx-auto" style="max-width: 480px;">
+        @if (_confirmando)
+        {
+            <p>Confirmando...</p>
+        }
+        else if (_exito)
+        {
+            <span class="bi bi-check-circle-fill fs-1 text-success"></span>
+            <h3 class="mt-3">¡Email confirmado!</h3>
+            <p>Tu cuenta está activa. Ya puedes iniciar sesión.</p>
+            <a href="/Login" class="btn btn-primary mt-2">Iniciar sesión</a>
+        }
+        else
+        {
+            <span class="bi bi-x-circle-fill fs-1 text-danger"></span>
+            <h3 class="mt-3">Enlace inválido</h3>
+            <p>El enlace ha expirado o es incorrecto.</p>
+            <a href="/Login" class="btn btn-outline-secondary mt-2">
+                <span class="bi bi-arrow-left me-1"></span>Volver al Login
+            </a>
+        }
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? UserId { get; set; }
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private bool _confirmando = true;
+    private bool _exito = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(UserId) || string.IsNullOrEmpty(Token))
+        {
+            _confirmando = false;
+            return;
+        }
+
+        var user = await UserManager.FindByIdAsync(UserId);
+        if (user is null)
+        {
+            _confirmando = false;
+            return;
+        }
+
+        var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Token));
+        var result = await UserManager.ConfirmEmailAsync(user, decodedToken);
+
+        _exito = result.Succeeded;
+        _confirmando = false;
+    }
+}

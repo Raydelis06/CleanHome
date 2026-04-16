@@ -4,6 +4,7 @@
 @inject EmpleadoService empleadoService;
 @page "/Empleados"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Registro de Empleados</PageTitle>
 <div class="container">

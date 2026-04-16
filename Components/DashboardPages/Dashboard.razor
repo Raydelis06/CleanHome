@@ -6,9 +6,10 @@
 @inject SolicitudService solicitudService
 @inject ToastService toastService
 @inject ClienteService clienteService
+@attribute [Authorize(Roles = "Admin, Empleado")]
 
 
-@page "/"
+@page "/Dashboard"
 @rendermode InteractiveServer
 
 <PageTitle>Dashboard</PageTitle>

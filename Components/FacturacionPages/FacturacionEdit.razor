@@ -1,5 +1,6 @@
 @page "/Facturacion/Editar/{FacturaId:int}"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin, Empleado")]
 
 @using CleanHome.Extensions
 @using CleanHome.Models

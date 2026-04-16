@@ -4,6 +4,7 @@
 @inject ClienteService clienteService;
 @inject TiposPropiedadService TiposPropiedadService;
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin, Empleado")]
 
 
 @page "/Propiedades"

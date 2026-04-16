@@ -7,6 +7,8 @@
 
 @inject OrdenCompraService ordenService
 @inject ToastService toastService
+@attribute [Authorize(Roles = "Admin")]
+
 
 <PageTitle>Registro de Órdenes de Compra</PageTitle>
 

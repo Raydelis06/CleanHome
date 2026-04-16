@@ -9,41 +9,46 @@
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link " href="" Match="NavLinkMatch.All">
+            <NavLink class="nav-link " href="/Dashboard" Match="NavLinkMatch.All">
                 <span class="bi bi-grid-3x3-gap-fill me-2 lh-base" aria-hidden="true"></span>
                 <span>Dashboard</span>
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link " href="/Servicios">
-                <span class="bi bi-brush me-2 lh-base" aria-hidden="true"></span>
-                <span>Tipos de servicio</span>
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="Admin">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link " href="/Servicios">
+                    <span class="bi bi-brush me-2 lh-base" aria-hidden="true"></span>
+                    <span>Tipos de servicio</span>
+                </NavLink>
+            </div>
+        </AuthorizeView>
         <div class="nav-item px-3">
             <NavLink class="nav-link " href="/Clientes">
                 <span class="bi bi-person me-2 lh-base" aria-hidden="true"></span>
                 <span>Clientes</span>
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link " href="/Empleados">
-                <span class="bi bi-person-vcard me-2 lh-base" aria-hidden="true"></span>
-                <span>Empleados</span>
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link " href="/Materiales">
-                <span class="bi bi-box-seam me-2 lh-base" aria-hidden="true"></span>
-                <span>Materiales</span>
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link " href="/Proveedores">
-                <span class="bi bi-people-fill me-2 lh-base" aria-hidden="true"></span>
-                <span>Proveedores</span>
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="Admin">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link " href="/Empleados">
+                    <span class="bi bi-person-vcard me-2 lh-base" aria-hidden="true"></span>
+                    <span>Empleados</span>
+                </NavLink>
+            </div>
+        
+            <div class="nav-item px-3">
+                <NavLink class="nav-link " href="/Materiales">
+                    <span class="bi bi-box-seam me-2 lh-base" aria-hidden="true"></span>
+                    <span>Materiales</span>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link " href="/Proveedores">
+                    <span class="bi bi-people-fill me-2 lh-base" aria-hidden="true"></span>
+                    <span>Proveedores</span>
+                </NavLink>
+            </div>
+        </AuthorizeView>
         <div class="nav-item px-3">
             <NavLink class="nav-link " href="/Propiedades">
                 <span class="bi bi-house-door me-2 lh-base" aria-hidden="true"></span>
@@ -56,12 +61,14 @@
                 <span>Facturaci&oacute;n</span>
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link " href="/OrdenesCompra">
-                <span class="bi bi-bag me-2 lh-base" aria-hidden="true"></span>
-                <span>Ordenes de compra</span>
-            </NavLink>
-        </div
+        <AuthorizeView Roles="Admin">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link " href="/OrdenesCompra">
+                    <span class="bi bi-bag me-2 lh-base" aria-hidden="true"></span>
+                    <span>Ordenes de compra</span>
+                </NavLink>
+            </div>
+        </AuthorizeView>
     </nav>
 </div>
 
