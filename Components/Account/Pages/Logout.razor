@@ -1,8 +1,9 @@
 ﻿@page "/Account/Logout"
+@using CleanHome.Models
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Mvc
 @attribute [IgnoreAntiforgeryToken]
-@inject SignInManager<IdentityUser> SignInManager
+@inject SignInManager<ApplicationUser> SignInManager
 @inject NavigationManager Navigation
 
 @code {

@@ -1,0 +1,160 @@
+@page "/Usuarios"
+@using Microsoft.AspNetCore.Identity
+@using CleanHome.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Gestión de Usuarios</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title">Gestión de Usuarios</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <div class="row">
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Filtro</strong></label>
+                    </div>
+                    <div class="col-6">
+                        <label class="col-form-label"><strong>Búsqueda</strong></label>
+                    </div>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <InputSelect class="form-control" @bind-Value="Filtro">
+                            <option value="" selected disabled hidden>Elija una opción</option>
+                            <option value="Email">Email</option>
+                            <option value="Rol">Rol</option>
+                        </InputSelect>
+                    </div>
+                    <div class="col-6">
+                        <div class="input-group">
+                            <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+                            <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-hover table-responsive">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Usuario</th>
+                        <th>Rol Actual</th>
+                        <th>Email Confirmado</th>
+                        <th class="text-center">Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in ListaUsuarios)
+                    {
+                        <tr>
+                            <td>@item.Email</td>
+                            <td>@item.UserName</td>
+                            <td>
+                                @if (item.Rol != null)
+                                {
+                                    <span class="badge @GetBadgeClass(item.Rol)">@item.Rol</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Sin rol</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.EmailConfirmado)
+                                {
+                                    <span class="bi bi-check-circle-fill text-success"></span>
+                                }
+                                else
+                                {
+                                    <span class="bi bi-x-circle-fill text-danger"></span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a href="@($"/Usuarios/Editar/{item.Id}")" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="card-footer">
+                <label>Cantidad: @ListaUsuarios.Count()</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<UsuarioViewModel> ListaUsuarios { get; set; } = new();
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+
+    public class UsuarioViewModel
+    {
+        public string Id { get; set; } = "";
+        public string? Email { get; set; }
+        public string? UserName { get; set; }
+        public string? Rol { get; set; }
+        public bool EmailConfirmado { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarUsuarios();
+    }
+
+    private async Task CargarUsuarios()
+    {
+        var usuarios = UserManager.Users.ToList();
+        ListaUsuarios = new List<UsuarioViewModel>();
+
+        foreach (var u in usuarios)
+        {
+            var roles = await UserManager.GetRolesAsync(u);
+            ListaUsuarios.Add(new UsuarioViewModel
+            {
+                Id = u.Id,
+                Email = u.Email,
+                UserName = u.UserName,
+                Rol = roles.FirstOrDefault(),
+                EmailConfirmado = u.EmailConfirmed
+            });
+        }
+    }
+
+    public async Task Buscar()
+    {
+        await CargarUsuarios();
+
+        if (!string.IsNullOrEmpty(Filtro) && !string.IsNullOrEmpty(ValorFiltro))
+        {
+            if (Filtro == "Email")
+                ListaUsuarios = ListaUsuarios.Where(u => u.Email != null &&
+                    u.Email.ToLower().Contains(ValorFiltro.ToLower())).ToList();
+
+            if (Filtro == "Rol")
+                ListaUsuarios = ListaUsuarios.Where(u => u.Rol != null &&
+                    u.Rol.ToLower().Contains(ValorFiltro.ToLower())).ToList();
+        }
+
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+    }
+
+    private string GetBadgeClass(string rol) => rol switch
+    {
+        "Admin"    => "bg-danger",
+        "Empleado" => "bg-primary",
+        "Cliente"  => "bg-success",
+        _          => "bg-secondary"
+    };
+}

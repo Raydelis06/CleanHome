@@ -9,9 +9,9 @@
 @using System.Text
 @layout AuthLayout
 @attribute [AllowAnonymous]
-@inject UserManager<IdentityUser> UserManager
+@inject UserManager<ApplicationUser> UserManager
 @inject RoleManager<IdentityRole> RoleManager
-@inject SignInManager<IdentityUser> SignInManager
+@inject SignInManager<ApplicationUser> SignInManager
 @inject NavigationManager Navigation
 @inject IEmailSender EmailSender
 

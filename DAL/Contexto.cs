@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanHome.DAL
 {
-    public class Contexto : IdentityDbContext<IdentityUser>
+    public class Contexto : IdentityDbContext<ApplicationUser>
     {
         public Contexto(DbContextOptions<Contexto> options) : base(options)
         {
@@ -37,7 +37,8 @@ namespace CleanHome.DAL
                 new TiposPropiedad { TipoPropiedadId = 5, Descripcion = "Villa", Estado = Estados.Activo },
                 new TiposPropiedad { TipoPropiedadId = 6, Descripcion = "Local Comercial", Estado = Estados.Activo }
             );
-        }
+
+    }
 
 
     }
